@@ -7,5 +7,5 @@ Java chess is a chess game implemented in Java. It is a practice project for a C
 
 The project has just begun and there is no runnable program yet.
 
-+ [Requirement specification](https://github.com/ShootingStar91/Javachess/documentation/requirementspecification.md)
-+ [Working hours tracking](https://github.com/ShootingStar91/Javachess/documentation/workinghours.md)
++ [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
++ [Working hours tracking](https://github.com/ShootingStar91/Javachess/blob/master/documentation/workinghours.md)
