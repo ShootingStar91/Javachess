@@ -26,6 +26,23 @@ public class Piece {
         return white;
     }
     
+    public String getLetter() {
+        switch (this.getType()) {
+            case PAWN:
+                return "p";
+            case KNIGHT:
+                return "n";
+            case ROOK:
+                return "r";
+            case BISHOP:
+                return "b";
+            case QUEEN:
+                return "q";
+            case KING:
+                return "k";
+        }
+        return "";
+    }
     
     
 }

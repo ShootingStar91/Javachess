@@ -5,7 +5,7 @@ Java chess is a chess game implemented in Java. It is a practice project for a C
 
 ### Documentation
 
-__Current state__ of the project is that there is a runnable version that has main menu and a board showing (just one piece image so far). Clicking board will print in console which part of board was clicked. There is some code for generating potential moves for each piece, but that is not visible in application yet.
+__Current state__ of the project is that there is a runnable version that has main menu, and if you click "Play against human" there is a chess board. You can already move and capture pieces.
 
 How to run it on linux with maven: <code>mvn compile exec:java -Dexec.mainClass=javachess.Main</code>
 

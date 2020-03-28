@@ -20,7 +20,9 @@ public class Game {
     Spot[] knightMoves;
     
     public Game(boolean againstAI) {
-        turns = 0;
+        /*
+        Move directions to aid with move generation
+        */
         knightMoves = new Spot[8];
         knightMoves[0] = new Spot(1, 2);
         knightMoves[1] = new Spot(2, 1);
@@ -40,12 +42,27 @@ public class Game {
         rookDirections[1] = new Spot(-1, 0);
         rookDirections[2] = new Spot(0, 1);
         rookDirections[3] = new Spot(1, 0);
+        
+        /*
+        Whose turn to move
+        */
         whiteToMove = true;
+        turns = 0;
+        
+        /*
+        When king or rooks move, castling needs to be disabled for it
+        Other checks need to be written in castling check method later
+        */
         whiteKingCastling = true;
         whiteQueenCastling = true;
         blackQueenCastling = true;
         blackKingCastling = true;
+        /*
+        
+        */
         checkDetected = false;
+        
+        
         board = new Piece [8][8];
         
         for (int x = 0; x < 8; x++) {
@@ -72,6 +89,21 @@ public class Game {
         
     }
     
+    public void move(Spot from, Spot to) {
+        if (whiteToMove) {
+            whiteToMove=false;
+        }
+        else {
+            turns++;
+            whiteToMove=true;
+        }
+        
+        Piece captured = board[to.getX()][to.getY()];
+        board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
+        board[from.getX()][from.getY()] = null;
+        System.out.println("Moved");
+        
+    }
     
     public ArrayList<Spot> getPotentialMoves(Spot spot) {
         if (board[spot.getX()][spot.getY()] == null) return null;
@@ -110,11 +142,13 @@ public class Game {
         } else if (board[x][y].getType() == PieceType.KNIGHT) {
             Spot[] knightMoves = generateKnightMoves(spot);
             for (Spot move : knightMoves) {
-                
-                if (move.onBoard() && board[move.getX()][move.getY()]!=null && 
-                   board[move.getX()][move.getY()].isWhite() != isWhite) {
+                if (!move.onBoard()) continue;
+                Piece piece = board[move.getX()][move.getY()];
+                if (move.onBoard() && (piece==null ||
+                   piece.isWhite() != isWhite)) {
                     moves.add(move);
-                    if (board[move.getX()][move.getY()].getType()==PieceType.KING) {
+                    
+                    if (piece!=null && piece.getType()==PieceType.KING) {
                         checkDetected = true;
                     }
                 }
@@ -125,6 +159,7 @@ public class Game {
             Collections.addAll(dirs, rookDirections);
             for (Spot dir : dirs) {
                 Spot newspot = new Spot(spot.getX()+dir.getX(), spot.getY()+dir.getY());
+                if (!newspot.onBoard()) break;
                 Piece piece = board[newspot.getX()][newspot.getY()];
                 if (newspot.onBoard()) {
                     if (board[newspot.getX()][newspot.getY()]!=null) {
@@ -142,9 +177,10 @@ public class Game {
             moves.addAll(generateMovesFor(spot, board[spot.getX()][spot.getY()].getType()));
         }
         
+        
         return moves;
     }
-   
+    
     private ArrayList<Spot> generateMovesFor(Spot spot, PieceType type) {
         ArrayList<Spot> moves = new ArrayList<>();
         boolean isWhite = board[spot.getX()][spot.getY()].isWhite();
@@ -177,18 +213,23 @@ public class Game {
                         checkDetected = true;
                     }
                 }
+                break;
             }
         }
         return moves;
     }
 
-    
+
     private Spot[] generateKnightMoves(Spot spot) {
         Spot[] moves = new Spot[8];
         for (int i=0; i<8; i++) {
             moves[i] = new Spot(spot.getX()+knightMoves[i].getX(), spot.getY()+knightMoves[i].getY());
         }
         return moves;
+    }
+    
+    public Piece[][] getBoard() {
+        return board;
     }
     
 }
