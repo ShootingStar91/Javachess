@@ -69,7 +69,6 @@ public class UserInterface extends Application {
                     public void handle(MouseEvent event) {
                         int row = GridPane.getRowIndex(imageView);
                         int col = GridPane.getColumnIndex(imageView);
-                        System.out.println("Selected " + col + ", " + row);
                         drawBoard();
                         clickedOn(col, row);
                     }

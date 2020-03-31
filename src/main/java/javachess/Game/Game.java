@@ -102,7 +102,6 @@ public class Game {
         Piece captured = board[to.getX()][to.getY()];
         board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
         board[from.getX()][from.getY()] = null;
-        System.out.println("Moved");
         
     }
     
@@ -158,7 +157,6 @@ public class Game {
             ArrayList<Spot> dirs = new ArrayList<>();
             Collections.addAll(dirs, bishopDirections);
             Collections.addAll(dirs, rookDirections);
-            for (Spot dir : dirs) System.out.println("Kingmoves: " + dir.getX() + ", " + dir.getY());
             for (Spot dir : dirs) {
                 Spot newspot = new Spot(spot.getX()+dir.getX(), spot.getY()+dir.getY());
                 if (!newspot.onBoard()) continue;
