@@ -42,7 +42,7 @@ public class GameTest {
     }
 
     @Test
-    public void potentialMovesReturnsNull() {
+    public void potentialMovesReturnsEmptyList() {
         game = new Game(true);
         ArrayList<Spot> moves = game.getPotentialMoves(new Spot(0, 0));
         assertTrue(moves.isEmpty());
