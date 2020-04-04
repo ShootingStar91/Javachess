@@ -21,6 +21,7 @@ public class Game {
     Spot[] rookDirections;
     Piece [][] board;
     Spot[] knightMoves;
+
     int enpassant;
 
     
@@ -71,6 +72,7 @@ public class Game {
         detectingCheck = false;
         enpassant = -1;
         
+        
         board = new Piece [8][8];
         
         for (int x = 0; x < 8; x++) {
@@ -98,6 +100,8 @@ public class Game {
     }
     
     public boolean move(Spot from, Spot to) {
+        blackChecked = false;
+        whiteChecked = false;
         if (whiteToMove) {
             whiteToMove=false;
         }
@@ -140,28 +144,10 @@ public class Game {
             }
         }
         
-        if (board[to.getX()][to.getY()]!=null)
-            if ((piece.getType()==PieceType.ROOK && board[to.getX()][to.getY()].getType() == PieceType.KING) ||
-                    (piece.getType()==PieceType.KING && board[to.getX()][to.getY()].getType() == PieceType.ROOK)) {
-                int x, y;
-                if (!whiteToMove) y = 7;
-                else y = 0;
-                if (from.getX()==0 || to.getX()==0) x = 2;
-                else x=6;
-
-                board[from.getX()][from.getY()] = null;
-                board[to.getX()][to.getY()] = null;
-                board[x][y] = new Piece(PieceType.KING, !whiteToMove);
-                int rookX;
-                if (x==2) rookX=3;
-                else rookX=5;
-                board[rookX][y] = new Piece(PieceType.ROOK, !whiteToMove);
-            }
-        
-        
-        board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
-        board[from.getX()][from.getY()] = null;
-        
+        if (!detectAndExecuteCastling(from, to)) {
+            board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
+            board[from.getX()][from.getY()] = null;
+        }
         return checkMate();
         
     }
@@ -204,7 +190,8 @@ public class Game {
                             if ((new Spot(x, y+dir*2).onBoard()) && board[x][y+dir*2]==null && board[x][y+dir]==null) moves.add(new Spot(x, y+dir*2));
                         }
                         // en passant
-                        if (enpassant!=-1 && (enpassant==x-1 || enpassant==x+1)) {
+                        if (enpassant!=-1 && (enpassant==x-1 || enpassant==x+1) && (board[enpassant][spot.getY()]!=null && board[enpassant][spot.getY()].isWhite()!=board[spot.getX()][spot.getY()].isWhite()
+                                && board[spot.getX()][spot.getY()].getType()==PieceType.PAWN)) {
                             if (board[enpassant][y+dir]==null) {
                                 moves.add(new Spot(enpassant, y+dir));
                             }
@@ -259,7 +246,7 @@ public class Game {
             }
             if (whiteToMove) {
                 if (castling(true, true)) {
-                    moves.add(new Spot(7,7));
+                    moves.add(new Spot(7, 7));
                 }
                 if (castling(true, false)) {
                     moves.add(new Spot(0, 7));
@@ -283,34 +270,65 @@ public class Game {
         
         for (Iterator<Spot> iterator = moves.iterator(); iterator.hasNext();) {
             Piece[][] savedBoard = copyBoard();
-            
+            boolean remove = false;
             Spot move = iterator.next();
             
-            board[move.getX()][move.getY()] = board[spot.getX()][spot.getY()];
-            board[spot.getX()][spot.getY()] = null;
+            
+            
+            if (!detectAndExecuteCastling(spot, move)) {
+                board[move.getX()][move.getY()] = board[spot.getX()][spot.getY()];
+                board[spot.getX()][spot.getY()] = null;
+            }
             
             checkDetected = false;
-            
+   
             for (Spot piece : getPiecesOnBoard()) {
+                
                 if (board[piece.getX()][piece.getY()].isWhite()!=whiteToMove) {
                     detectingCheck = true;
                     
                     getPotentialMoves(piece);
                 }
+                
                 if (checkDetected) {
                     break;
                 }
+                
+                if ((!whiteToMove && whiteChecked) || (whiteToMove && blackChecked)) { 
+                    remove=true; 
+                    break; 
+                }
+            
             }
-            if (checkDetected) {
+            
+            if (checkDetected || remove) {
                 iterator.remove();
             }
             
             board = savedBoard;
             
         }
-        
-        
         return moves;
+    }
+    
+    private boolean detectAndExecuteCastling (Spot from, Spot to) {
+        if (board[from.getX()][from.getY()]==null || board[to.getX()][to.getY()]==null ||
+            board[from.getX()][from.getY()].isWhite()!=board[to.getX()][to.getY()].isWhite())
+            return false;
+        int x, y;
+        if (!whiteToMove) y = 7;
+        else y = 0;
+        if (from.getX()==0 || to.getX()==0) x = 2;
+        else x=6;
+
+        board[from.getX()][from.getY()] = null;
+        board[to.getX()][to.getY()] = null;
+        board[x][y] = new Piece(PieceType.KING, !whiteToMove);
+        int rookX;
+        if (x==2) rookX=3;
+        else rookX=5;
+        board[rookX][y] = new Piece(PieceType.ROOK, !whiteToMove);
+        return true;
     }
     
     private boolean castling(boolean white, boolean kingSide) {
@@ -320,19 +338,19 @@ public class Game {
         if (kingSide && white) {
             x = 5;
             y = 7;
-            if (!whiteKingCastling) return false;
+            if (!whiteKingCastling || whiteChecked) return false;
         } else if (!kingSide && white) {
             x = 1;
             y = 7;
-            if (!whiteQueenCastling) return false;
+            if (!whiteQueenCastling || whiteChecked) return false;
         } else if (kingSide && !white) {
             x = 5;
             y = 0;
-            if (!blackKingCastling) return false;
+            if (!blackKingCastling || blackChecked) return false;
         } else if (!kingSide && !white) {
             x = 1;
             y = 0;
-            if (!blackQueenCastling) return false;
+            if (!blackQueenCastling || blackChecked) return false;
         }
         
         if (!(board[x][y]==null && board[x+1][y]==null)) return false;
