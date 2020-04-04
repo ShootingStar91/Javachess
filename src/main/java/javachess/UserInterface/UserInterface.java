@@ -115,7 +115,6 @@ public class UserInterface extends Application {
                 
                 for (Spot spot : highlightedSpots) {
                     if (spot.getX()==col && spot.getY()==row) {
-                        
                         move(spot);
                         highlightedSpots=null;
                         drawBoard();
@@ -149,8 +148,19 @@ public class UserInterface extends Application {
     }
     
     public void move(Spot to) {
-        game.move(selectedPiece, to);
+        if(game.move(selectedPiece, to)) {
+            checkMate();
+            return;
+        }
         drawBoard();
+    }
+    
+    public void checkMate() {
+        if (game.whiteToMove()) {
+            System.out.println("Black won!");
+        } else {
+            System.out.println("White won!");
+        }
     }
     
     public void drawBoard() {

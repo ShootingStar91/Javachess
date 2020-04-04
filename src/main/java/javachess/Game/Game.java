@@ -2,6 +2,7 @@ package javachess.Game;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
  *
@@ -15,10 +16,13 @@ public class Game {
     boolean detectingCheck;
     boolean whiteToMove;
     boolean checkDetected;
+    boolean whiteChecked, blackChecked;
     Spot[] bishopDirections;
     Spot[] rookDirections;
     Piece [][] board;
     Spot[] knightMoves;
+    int enpassant;
+
     
     public Game(boolean againstAI) {
         /*
@@ -62,7 +66,10 @@ public class Game {
         
         */
         checkDetected = false;
+        whiteChecked = false;
+        blackChecked = false;
         detectingCheck = false;
+        enpassant = -1;
         
         board = new Piece [8][8];
         
@@ -90,7 +97,7 @@ public class Game {
         
     }
     
-    public void move(Spot from, Spot to) {
+    public boolean move(Spot from, Spot to) {
         if (whiteToMove) {
             whiteToMove=false;
         }
@@ -99,10 +106,73 @@ public class Game {
             whiteToMove=true;
         }
         
-        Piece captured = board[to.getX()][to.getY()];
+        Piece piece = board[from.getX()][from.getY()];
+        
+        // pawn initial doublemove? en passant? castling?
+        if (piece.getType()==PieceType.PAWN && Math.abs(from.getY()-to.getY())==2) {
+            enpassant = from.getX();
+        } else {
+            enpassant = -1;
+        }
+        if (piece.getType()==PieceType.PAWN) {
+            if (from.getX()!=to.getX() && board[to.getX()][to.getY()] == null) {
+                if (to.getY()==2) {
+                    board[to.getX()][3] = null;
+                } else if (to.getY()==5) {
+                    board[to.getX()][4] = null;
+                }
+            }
+        }
+        if (piece.getType()==PieceType.KING) {
+            if (piece.isWhite()) {
+                whiteKingCastling = false;
+                whiteQueenCastling = false;
+            } else {
+                blackKingCastling = false;
+                blackQueenCastling = false;
+            }
+        } else if (piece.getType()==PieceType.ROOK) {
+            if (piece.isWhite()) {
+                if (from.getX()==0) whiteKingCastling=false;
+                else whiteQueenCastling=false;
+                if (from.getX()==0) blackKingCastling=false;
+                else blackQueenCastling=false;
+            }
+        }
+        
+        if (board[to.getX()][to.getY()]!=null)
+            if ((piece.getType()==PieceType.ROOK && board[to.getX()][to.getY()].getType() == PieceType.KING) ||
+                    (piece.getType()==PieceType.KING && board[to.getX()][to.getY()].getType() == PieceType.ROOK)) {
+                int x, y;
+                if (!whiteToMove) y = 7;
+                else y = 0;
+                if (from.getX()==0 || to.getX()==0) x = 2;
+                else x=6;
+
+                board[from.getX()][from.getY()] = null;
+                board[to.getX()][to.getY()] = null;
+                board[x][y] = new Piece(PieceType.KING, !whiteToMove);
+                int rookX;
+                if (x==2) rookX=3;
+                else rookX=5;
+                board[rookX][y] = new Piece(PieceType.ROOK, !whiteToMove);
+            }
+        
+        
         board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
         board[from.getX()][from.getY()] = null;
         
+        return checkMate();
+        
+    }
+    
+    public boolean checkMate() {
+        for (Spot spot : getPiecesOnBoard()) {
+            if (board[spot.getX()][spot.getY()].isWhite()==whiteToMove) {
+                if (getPotentialMoves(spot).size()>0) return false;
+            }
+        }
+        return true;
     }
     
     public ArrayList<Spot> getPotentialMoves(Spot spot) {
@@ -110,7 +180,7 @@ public class Game {
         checkDetected = false;
         int x = spot.getX();
         int y = spot.getY();
-        
+
         boolean isWhite = board[spot.getX()][spot.getY()].isWhite();
         
         ArrayList<Spot> moves = new ArrayList<>();
@@ -129,11 +199,22 @@ public class Game {
                         if (board[x][y+dir]==null) {
                             moves.add(newspot);
                         }
+                        // pawn initial doublemove
+                        if ((spot.getY()==1 && !whiteToMove) || (spot.getY()==6 && whiteToMove)) {
+                            if ((new Spot(x, y+dir*2).onBoard()) && board[x][y+dir*2]==null && board[x][y+dir]==null) moves.add(new Spot(x, y+dir*2));
+                        }
+                        // en passant
+                        if (enpassant!=-1 && (enpassant==x-1 || enpassant==x+1)) {
+                            if (board[enpassant][y+dir]==null) {
+                                moves.add(new Spot(enpassant, y+dir));
+                            }
+                        }
                     } else {
                         if (board[x+dx][y+dir]!=null && board[x+dx][y+dir].isWhite()!=isWhite) {
                             moves.add(newspot);
                             if (board[x+dx][y+dir].getType()==PieceType.KING) {
                                 checkDetected = true;
+                                checked();
                             }
                         }
                     }
@@ -150,6 +231,7 @@ public class Game {
                     
                     if (piece!=null && piece.getType()==PieceType.KING) {
                         checkDetected = true;
+                        checked();
                     }
                 }
             }
@@ -168,10 +250,26 @@ public class Game {
                         }
                         if (piece.getType() == PieceType.KING) {
                             checkDetected = true;
+                            checked();
                         }
                     }
                     moves.add(newspot);
-
+                    
+                }
+            }
+            if (whiteToMove) {
+                if (castling(true, true)) {
+                    moves.add(new Spot(7,7));
+                }
+                if (castling(true, false)) {
+                    moves.add(new Spot(0, 7));
+                }
+            } else {
+                if (castling(false, true)) {
+                    moves.add(new Spot(7, 0));
+                }
+                if (castling(false, false)) {
+                    moves.add(new Spot(0, 0));
                 }
             }
         } else {
@@ -182,13 +280,21 @@ public class Game {
             detectingCheck = false;
             return null;
         }
-        for (Spot move : moves) {
-            //Piece captured = board[move.getX()][move.getY()];
+        
+        for (Iterator<Spot> iterator = moves.iterator(); iterator.hasNext();) {
+            Piece[][] savedBoard = copyBoard();
+            
+            Spot move = iterator.next();
+            
+            board[move.getX()][move.getY()] = board[spot.getX()][spot.getY()];
+            board[spot.getX()][spot.getY()] = null;
             
             checkDetected = false;
+            
             for (Spot piece : getPiecesOnBoard()) {
-                if (board[piece.getX()][piece.getY()].isWhite()) {
+                if (board[piece.getX()][piece.getY()].isWhite()!=whiteToMove) {
                     detectingCheck = true;
+                    
                     getPotentialMoves(piece);
                 }
                 if (checkDetected) {
@@ -196,12 +302,55 @@ public class Game {
                 }
             }
             if (checkDetected) {
-                moves.remove(move);
+                iterator.remove();
             }
+            
+            board = savedBoard;
+            
         }
         
         
         return moves;
+    }
+    
+    private boolean castling(boolean white, boolean kingSide) {
+        int x=0;
+        int y=0;
+        
+        if (kingSide && white) {
+            x = 5;
+            y = 7;
+            if (!whiteKingCastling) return false;
+        } else if (!kingSide && white) {
+            x = 1;
+            y = 7;
+            if (!whiteQueenCastling) return false;
+        } else if (kingSide && !white) {
+            x = 5;
+            y = 0;
+            if (!blackKingCastling) return false;
+        } else if (!kingSide && !white) {
+            x = 1;
+            y = 0;
+            if (!blackQueenCastling) return false;
+        }
+        
+        if (!(board[x][y]==null && board[x+1][y]==null)) return false;
+        if (!kingSide) {
+            if (board[x+2][y]!=null) return false;
+        }
+
+        return true;
+    }
+    
+    private Piece[][] copyBoard () {
+        Piece[][] tempBoard = new Piece[8][8];
+        for (int x=0; x<8; x++) {
+            for (int y=0; y<8; y++) {
+                tempBoard[x][y] = board[x][y];
+            }
+        }
+        return tempBoard;
     }
     
     private ArrayList<Spot> generateMovesFor(Spot spot, PieceType type) {
@@ -234,11 +383,30 @@ public class Game {
                     moves.add(new Spot(x, y));
                     if (board[x][y].getType() == PieceType.KING) {
                         checkDetected = true;
+                        checked();
                     }
                 }
                 break;
             }
         }
+        Spot whiteKingSpot = new Spot(4, 7);
+        Spot blackKingSpot = new Spot(4, 0);
+        if (type==PieceType.ROOK) {
+            if (spot.getX()==7 && spot.getY()==7) {
+                if (castling(true, true)) moves.add(whiteKingSpot);
+            }
+            if (spot.getX()==0 && spot.getY()==7) {
+                if (castling(true, false)) moves.add(whiteKingSpot);
+            }
+            if (spot.getX()==7 && spot.getY()==0) {
+                if (castling(false, true)) moves.add(blackKingSpot);
+            }
+            if (spot.getX()==0 && spot.getY()==0) {
+                if (castling(false, false)) moves.add(blackKingSpot);
+            }
+        }
+        
+        
         return moves;
     }
 
@@ -249,6 +417,13 @@ public class Game {
             moves[i] = new Spot(spot.getX()+knightMoves[i].getX(), spot.getY()+knightMoves[i].getY());
         }
         return moves;
+    }
+    
+    public void checked() {
+        if (!detectingCheck) {
+            if (whiteToMove) blackChecked=true;
+            else whiteChecked=true;
+        }
     }
     
     public Piece[][] getBoard() {
