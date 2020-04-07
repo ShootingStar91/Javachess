@@ -151,6 +151,8 @@ public class UserInterface extends Application {
     
     public void move(Spot to) {
         if(game.move(selectedPiece, to)) {
+            highlightedSpots = null;
+            drawBoard();
             checkMate();
             return;
         }

@@ -48,4 +48,30 @@ public class GameTest {
         assertTrue(moves.isEmpty());
     }
 
+    @Test
+    public void checkMateReturnsTrue() {
+        game = new Game(true);
+        game.move(new Spot(4,6), new Spot(4,5));
+        game.move(new Spot(5,1), new Spot(5,2));
+        game.move(new Spot(5,6), new Spot(5,5));
+        game.move(new Spot(6,1), new Spot(6,2));
+        game.move(new Spot(5,5), new Spot(5,4));
+        game.move(new Spot(6,2), new Spot(6,3));
+        boolean checkmate = game.move(new Spot(3,7), new Spot(7,3));
+        assertTrue(checkmate);
+    }
+    
+    @Test
+    public void checkMateReturnsFalse() {
+        game = new Game(true);
+        assertTrue(!game.move(new Spot(1,6), new Spot(3, 6)));
+    }
+    
+    @Test
+    public void getPotentialMovesCorrect() {
+        game = new Game(true);
+        ArrayList<Spot> moves = game.getPotentialMoves(new Spot(0, 1));
+        assertTrue(moves.size()==1 && moves.get(0).getX()==0 && moves.get(0).getY()==2);
+    }
+    
 }
