@@ -2,6 +2,8 @@ package javachess.UserInterface;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
+import javachess.Dao.Dao;
 import javachess.Game.Game;
 import javachess.Game.Piece;
 import javachess.Game.Spot;
@@ -46,7 +48,7 @@ public class UserInterface extends Application {
         
         
         
-        window.setTitle("Javachess 0.03");
+        window.setTitle("Javachess 0.05");
         window.setMinHeight(600);
         window.setMinWidth(800);
         
@@ -161,6 +163,14 @@ public class UserInterface extends Application {
         } else {
             System.out.println("White won!");
         }
+        
+        Dao gameSaver = new Dao();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Write the title to save the game with");
+        String title = scanner.nextLine();
+        System.out.println("Game saved as " + title);
+        gameSaver.save(game, title);
+        
     }
     
     public void drawBoard() {

@@ -21,6 +21,8 @@ public class Game {
     Spot[] rookDirections;
     Piece [][] board;
     Spot[] knightMoves;
+    ArrayList<Spot> movedFrom;
+    ArrayList<Spot> movedTo;
 
     int enpassant;
 
@@ -54,6 +56,9 @@ public class Game {
         */
         whiteToMove = true;
         turns = 0;
+        
+        movedFrom = new ArrayList<>();
+        movedTo = new ArrayList<>();
         
         /*
         When king or rooks move, castling needs to be disabled for it
@@ -148,8 +153,20 @@ public class Game {
             board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
             board[from.getX()][from.getY()] = null;
         }
+        
+        movedFrom.add(from);
+        movedTo.add(to);
+        
         return checkMate();
         
+    }
+    
+    public ArrayList<Spot> getMovesFrom() {
+        return movedFrom;
+    }
+    
+    public ArrayList<Spot> getMovesTo() {
+        return movedTo;
     }
     
     public boolean checkMate() {

@@ -18,6 +18,7 @@
                 <version>0.0.3</version>
                 <configuration>
                     <mainClass>org.openjfx.App</mainClass>
+                    
                 </configuration>
             </plugin>
                 <plugin>

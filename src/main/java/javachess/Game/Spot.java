@@ -25,4 +25,7 @@ public class Spot {
         return this.x>=0 && this.x < 8 && this.y>=0 && this.y < 8;
     }
     
+    public String toString() {
+        return ""+x+""+y;
+    }
 }
