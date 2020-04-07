@@ -10,4 +10,6 @@
 | 29.3. | 2 | Continued writing game logic |
 | 1.4.  | 1 | Implemented check detection |
 | 3.4.  | 2 | Added game ending in checkmate, started adding support for complex moves (en passant, castling) |
-| Total | 16 | |
+| 5.4.  | 3 | Added en passant and most parts of castling (conditions still not complete for castling) |
+| 7.4.  | 4 | Added saving the game to a text file after checkmate happens. Also added Dao-class and saving the game to a text file after it's over. |
+| Total | 23 | |
