@@ -13,5 +13,6 @@ __Important:__
 
 How to run it on linux with maven: <code>mvn compile exec:java -Dexec.mainClass=javachess.main.Main</code>
 
++ [Architecture](https://github.com/ShootingStar91/Javachess/blob/master/documentation/architecture.md)
 + [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
 + [Working hours tracking](https://github.com/ShootingStar91/Javachess/blob/master/documentation/workinghours.md)
