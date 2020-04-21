@@ -10,9 +10,9 @@ The application does not have user roles. After each game the player can choose 
 
 ### Main functionalities
 
-+ Play normal chess against human
++ Play normal chess against human (Completed)
 + Play chess against a simple AI
-+ Re-watch games played in the past, going through them turn-by-turn
++ Re-watch games played in the past, going through them turn-by-turn (Completed)
   + Also possible to go backwards
 
 ### Further development possibilities
