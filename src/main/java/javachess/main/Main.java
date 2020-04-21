@@ -1,4 +1,4 @@
-package javachess;
+package javachess.main;
 
 /**
  *
@@ -8,7 +8,7 @@ package javachess;
 public class Main {
     
     public static void main(String[] args) {
-        javachess.UserInterface.UserInterface.main(args);
+        javachess.userinterface.UserInterface.main(args);
     }
     
 }

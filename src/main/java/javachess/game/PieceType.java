@@ -1,4 +1,4 @@
-package javachess.Game;
+package javachess.game;
 
 /**
  *

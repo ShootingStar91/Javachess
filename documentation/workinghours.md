@@ -12,4 +12,11 @@
 | 3.4.  | 2 | Added game ending in checkmate, started adding support for complex moves (en passant, castling) |
 | 5.4.  | 3 | Added en passant and most parts of castling (conditions still not complete for castling) |
 | 7.4.  | 4 | Added saving the game to a text file after checkmate happens. Also added Dao-class and saving the game to a text file after it's over. |
-| Total | 23 | |
+| 13.4. | 4 | Heavily modified game-class to better detect castling conditions |
+| 14.4. | 3 | Finished castling conditions, takes into account pawn attacking |
+| 15.4. | 2 | Fixed hundreds of checkstyle errors from Game.java |
+| 17.4. | 2 | Added selection of promotion |
+| 19.4. | 2 | Made the promotion neater and added turn counter visible |
+| 20.4. | 3 | Added rewatching played games |
+| 21.4. | 8 | Rewrote lots of code to remove checkstyle errors, also added javafx-dialogues to save the game with a title, and fought with lots of bugs. Also updated documentation and made tests runnable. |
+| Total | 47 | |
