@@ -5,7 +5,9 @@ Java chess is a chess game implemented in Java. It is a practice project for a C
 
 ### Documentation
 
-Current state of the game: Only the "Play with human" -button works. You can almost play normal chess. Upgrading pawn not yet possible and castling conditions need fine-tuning. Game is saved in a text file after checkmate, user is prompted the title in command line. Text file is at /src/main/resources/savedgames.txt
+Current state of the game: Full chess playable, but only against yourself or a friend sitting next to you.
+
+Game can be saved after it is finished, and reviewed turn-by-turn. AI will be added later.
 
 How to run it on linux with maven: <code>mvn compile exec:java -Dexec.mainClass=javachess.main.Main</code>
 
