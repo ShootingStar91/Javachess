@@ -57,5 +57,11 @@ public class GameTest {
                 moves.get(0).getY() == 2);
     }
 
+    @Test
+    public void AIEngineReturnsCorrectPhase() {
+        game = new Game(true);
+        Phase phase = game.move(new Spot(4, 6), new Spot(4, 5));
+        assertTrue(phase == Phase.PLAY);
+    }
     
 }

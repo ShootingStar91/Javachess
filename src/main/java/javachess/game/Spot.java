@@ -2,8 +2,10 @@
 package javachess.game;
 
 /**
- *
- * @author Arttu Kangas
+ * Class which represents a single spot within a game.
+ * It consists of x and y integers, simple getters and
+ * setters for those, as well as a method to quickly check
+ * if the spot is within the limits of the chess board.
  */
 public class Spot {
     
@@ -34,6 +36,11 @@ public class Spot {
         this.y = y; 
     }
     
+    /**
+     * Checks if the spot is on the chess board.
+     * @return boolean value indicating if this spot is within the limits of 
+     * the board
+     */
     public boolean onBoard() {
         return this.x >= 0 && this.x < 8 && this.y >= 0 && this.y < 8;
     }

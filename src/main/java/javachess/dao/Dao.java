@@ -10,11 +10,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import javachess.game.Game;
 import java.io.PrintWriter;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import javachess.game.Piece;
 
-
+/**
+ * A class for a data access object. It provides methods
+ * to save a board history of a game into a text file.
+ * @author arkangas
+ */
 public class Dao {
     
     String fileName;
@@ -23,15 +26,19 @@ public class Dao {
         fileName = "savedgames.txt";
     }
     
+    /**
+     * This method saves the board history from a given game-class into a
+     * text file with a given title.
+     * @param game The game to be saved
+     * @param title A title for the game
+     */
     public void save(Game game, String title) {
-        
         ArrayList<Piece[][]> boardHistory = game.getBoardHistory();
         File file = new File(fileName);
         if (!file.exists() || file.isDirectory()) {
             try {
                 file.createNewFile();
             } catch (Exception e) {
-                
             }
         }
         try (FileWriter fileWriter = new FileWriter(fileName, true);
@@ -40,16 +47,13 @@ public class Dao {
             writer.println(" " + title);
             for (Piece[][] board : boardHistory) {
                 writeBoard(writer, board);
-                writer.println();
             }
             writer.close();
         } catch (IOException e) {
-            System.out.println(e);
         }
-        
     }
     
-    public void writeBoard(PrintWriter writer, Piece[][] board) {
+    private void writeBoard(PrintWriter writer, Piece[][] board) {
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 Piece piece = board[x][y];
@@ -65,8 +69,13 @@ public class Dao {
                 writer.write(character);
             }
         }
+        writer.println();
     }
     
+    /**
+     * Reads the previously saved games from a file and returns their titles
+     * @return ArrayList of titles of previously saved games
+     */
     public ArrayList<String> getAvailableGames() {
         try {
             ArrayList<String> games = new ArrayList<>();
@@ -86,6 +95,12 @@ public class Dao {
         }
     }
     
+    /**
+     * Loads a game specified by a title and returns its board history
+     * @param gameName The title of the game to be loaded
+     * @return ArrayList of chess boards (two-dimensional Piece-arrays),
+     * representing each different turn of the loaded game in order.
+     */
     public ArrayList<Piece[][]> load(String gameName) {
         try {
             File file = new File(fileName);

@@ -3,7 +3,6 @@ package javachess.userinterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
-import java.util.Random;
 import javachess.dao.Dao;
 import javachess.game.Game;
 import javachess.game.Phase;
@@ -11,7 +10,6 @@ import javachess.game.Piece;
 import javachess.game.PieceType;
 import javachess.game.Spot;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -81,7 +79,8 @@ public class UserInterface extends Application {
 
         
         initImages();
-        
+        gameWindow.getIcons().add(images.get("qll"));
+
         for (int x = 2; x <= 5; x++) {
             gamePane.add(new ImageView(), x, 0);
         }
@@ -99,7 +98,7 @@ public class UserInterface extends Application {
         });
         gamePane.add(returnToMenu, 7, 0);
         
-        window.setTitle("Javachess 0.07");
+        window.setTitle("Javachess 0.8");
         window.setMinHeight(400);
         window.setMinWidth(500);
         
@@ -162,16 +161,19 @@ public class UserInterface extends Application {
         playHuman.setText("Play against human");
 
         playHuman.setOnAction(event -> {
-            watchingGame = false;
             startGame(false);
-            showRewatchButtons(false);
-            window.setScene(gameScene);
+
         });
         
         
         
         Button playAI = new Button();
         playAI.setText("Play against AI");
+        
+        playAI.setOnAction(event -> {
+            startGame(true);
+        });
+        
         Button rewatch = new Button();
         rewatch.setText("Rewatch a previously played game");
         rewatch.setOnAction(event -> {
@@ -313,7 +315,7 @@ public class UserInterface extends Application {
                         return;
                     }
                 }
-                highlightedSpots=null;
+                highlightedSpots = null;
                 drawBoard();
 
             }
@@ -321,7 +323,7 @@ public class UserInterface extends Application {
         
         
         selectedPiece = new Spot(col, row);
-        if (game.getBoard()[col][row]!=null && game.getBoard()[col][row].isWhite() != game.whiteToMove()) return;
+        if (game.getBoard()[col][row] != null && game.getBoard()[col][row].isWhite() != game.whiteToMove()) return;
         
         highlight(col, row);
         
@@ -340,7 +342,7 @@ public class UserInterface extends Application {
     
     public void move(Spot to) {
         Phase phase = game.move(selectedPiece, to);
-        if (phase == Phase.CHECKMATE) {
+        if (phase == Phase.CHECKMATE || phase == Phase.STALEMATE) {
             highlightedSpots = null;
             drawBoard();
             gameFinished(phase);
@@ -361,16 +363,20 @@ public class UserInterface extends Application {
         if (phase == Phase.CHECKMATE) {
             gameResult = "Checkmate, ";
             if (game.whiteToMove()) {
-                gameResult += "white won!";
-            } else {
                 gameResult += "black won!";
+            } else {
+                gameResult += "white won!";
             }
         } else if (phase == Phase.STALEMATE) {
-            gameResult = "The game was a stalemate!";
+            gameResult = "The game was a stalemate! It means there is no winner. " +
+                    "Either the game ran for 50 turns, or ended up in a situation" +
+                    " where the player to move had no legal moves left, but was" +
+                    " not in check.";
         }
         dialog.setTitle("Game finished");
         dialog.setHeaderText(gameResult);
-        dialog.setContentText("Please write a title for the game to save it (or leave empty to not save it). Notice: Do not choose a name that you have used before.");
+        
+        dialog.setContentText("Please write a title for the game to save it (or leave empty to not save it). \nNotice: Do not choose a name that you have used before. \nWARNING: Do not press enter! Click the OK button instead.");
 
         Optional<String> title = dialog.showAndWait();
         if (title.isPresent() && !(title.get().equals(""))) {
@@ -431,9 +437,15 @@ public class UserInterface extends Application {
     }
     
     public void startGame(boolean againstAI) {
+        
+        watchingGame = false;
+        
         game = new Game(againstAI);
         
         drawBoard();
+        
+        showRewatchButtons(false);
+        window.setScene(gameScene);
         
     }
     

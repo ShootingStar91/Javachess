@@ -19,4 +19,5 @@
 | 19.4. | 2 | Made the promotion neater and added turn counter visible |
 | 20.4. | 3 | Added rewatching played games |
 | 21.4. | 8 | Rewrote lots of code to remove checkstyle errors, also added javafx-dialogues to save the game with a title, and fought with lots of bugs. Also updated documentation and made tests runnable. |
-| Total | 47 | |
+| 28.4. | 7 | Added AIEngine class, slight modifications elsewhere, javadoc started, documentation improved |
+| Total | 54 | |

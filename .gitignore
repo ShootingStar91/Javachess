@@ -1,5 +1,7 @@
 target/
 nbactions.xml
+nb-configuration.xml
 /documentation/notes
+savedgames.txt
 
 /nbproject/

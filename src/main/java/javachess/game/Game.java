@@ -3,12 +3,22 @@ package javachess.game;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/**
+ * The class responsible for handling the game logic. It contains
+ * a chessboard which has all the pieces on it. It has methods for
+ * generating all possible moves of player's pieces, and methods
+ * for executing those moves. It also uses the AIEngine class to provide
+ * an AI opponent.
+ * 
+ * @author Arttu Kangas
+ */
 public final class Game {
 
     private boolean whiteKingCastling;
     private boolean whiteQueenCastling;
     private boolean blackQueenCastling;
     private boolean blackKingCastling;
+    private boolean againstAI;
     private int turns;
     private boolean whiteToMove;
     private ArrayList<Spot> bishopDirections;
@@ -26,9 +36,22 @@ public final class Game {
     private final int whiteSide = 7;
     private final int knightJump = 2;
     private final int enpassantDisabled = -2;
+    private final int turnLimit = 50;
+    private AIEngine ai;
     ArrayList<Piece[][]> boardHistory;
 
+    /**
+     * The constructor of a game. It can create a game between humans, or
+     * with an AI opponent.
+     * @param againstAI 
+     */
     public Game(final boolean againstAI) {
+        
+        this.againstAI = againstAI;
+        
+        if (againstAI) {
+            ai = new AIEngine(this);
+        }
 
         initMoves();
 
@@ -39,7 +62,6 @@ public final class Game {
         initPieces();
 
         boardHistory.add(copyBoard());
-
         
         generatePotentialMoves(whiteToMove);
 
@@ -133,6 +155,13 @@ public final class Game {
         }
     }
 
+    /**
+     * Method which executes a move and completes the turn or tells the caller
+     * to ask player for promotion.
+     * @param from Spot where the piece to be moved is located now
+     * @param to Spot where the piece will be moved to
+     * @return Phase which the game is in after the move is executed
+     */
     public Phase move(final Spot from, final Spot to) {
         clearMoves();
 
@@ -149,23 +178,33 @@ public final class Game {
         
         if (promotion != null) {
             return Phase.PROMOTION;
-        }     
+        }
+        generatePotentialMoves(whiteToMove);
         return startTurn();
     }
     
-    public Phase startTurn() {
-        
-        generatePotentialMoves(whiteToMove);
-
-        if (checkMate()) {
-            return Phase.CHECKMATE;
+    private Phase startTurn() {
+        Phase phase = Phase.PLAY;
+        updateKingSpots();
+        updateAttackedSpots();
+        if (noMovesLeft()) {
+            if (checked()) {
+                phase = Phase.CHECKMATE;
+            } else {
+                phase = Phase.STALEMATE;
+            }
+            return phase;
         }
-        
-        return Phase.PLAY;
-        
+        if (turns == turnLimit) {
+            return Phase.STALEMATE;
+        }
+        if (againstAI && !whiteToMove) {
+            phase = ai.doTurn();
+        }
+        return phase;
     }
 
-    public boolean checkMate() {
+    private boolean noMovesLeft() {
         for (Spot spot : getPiecesOnBoard()) {
             if (board[spot.getX()][spot.getY()].isWhite() == whiteToMove) {
                 if (getMoves(spot) != null && getMoves(spot).size() > 0) {
@@ -305,6 +344,11 @@ public final class Game {
         }
     }
 
+    /**
+     * Get the moves of a piece at a specific spot
+     * @param spot Where the piece is
+     * @return ArrayList of the spots it can move to
+     */
     public ArrayList<Spot> getMoves(final Spot spot) {
         if (board[spot.getX()][spot.getY()] == null) {
             return null;
@@ -368,6 +412,13 @@ public final class Game {
         }
     }
     
+    /**
+     * Promotes a given pawn into the given type of piece and then finishes
+     * the turn.
+     * @param spot Where the promoted pawn is
+     * @param type What type it will be promoted to
+     * @return the phase the game will be in after promotion
+     */
     public Phase promote(Spot spot, PieceType type) {
         board[spot.getX()][spot.getY()] = new Piece(type,
                 board[spot.getX()][spot.getY()].isWhite());
@@ -743,6 +794,10 @@ public final class Game {
         return whiteToMove;
     }
 
+    /**
+     * Gathers a list of all pieces on the board (both players)
+     * @return ArrayList of all the Spots that have a piece in them
+     */
     public ArrayList<Spot> getPiecesOnBoard() {
         ArrayList<Spot> pieces = new ArrayList<>();
         for (int x = 0; x < boardSize; x++) {
