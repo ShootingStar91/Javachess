@@ -34,7 +34,7 @@ Compile:
 mvn compile exec:java -Dexec.mainClass=javachess.main.Main
 ```
 
-Create .jar into /target/:
+Create .jar into /target/Javachess-1.0-SNAPSHOT.jar:
 ```
 mvn package
 ```
@@ -48,6 +48,8 @@ Create jacoco report of test coverage into /target/site/jacoco/:
 ```
 mvn test jacoco:report
 ```
+
+View this by opening the generated file index.html with a browser
 
 Create checkstyle report into /target/site/:
 ```
