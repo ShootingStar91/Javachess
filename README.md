@@ -2,10 +2,7 @@
 
 Java chess is a chess game implemented in Java. It is a practice project for a Computer Science course at University of Helsinki, by Arttu Kangas. The game will have at least normal chess against human or AI, and the games will be saved and can be rewatched.
 
-
-### Documentation
-
-Current state:
+__Current state__:
 + Fully playable chess against human
 + Also against computer
   + Not an intelligent opponent yet, chooses random moves, but it's still proper chess
