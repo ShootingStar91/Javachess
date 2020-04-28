@@ -1,10 +1,10 @@
 # Instructions
 
-Download Javachess.jar
+Download [Javachess.jar](https://github.com/ShootingStar91/Javachess/releases/download/viikko6/Javachess-0.8.jar)
 
 Run it on command line by:
 ```
-java -jar Javachess.jar
+java -jar Javachess-0.8.jar
 ```
 
 Choose either Play Human or Play against AI.
