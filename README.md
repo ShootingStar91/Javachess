@@ -15,9 +15,43 @@ Current state:
 __Important:__ 
 + When saving a game, do not press enter in the dialog. Instead, click the OK-button with your mouse. Sometimes the application crashes if you press enter. This might be a bug of JavaFX interacting badly with the UI of OS, because [similar errors are reported on the web](https://stackoverflow.com/questions/18512654/jvm-crashes-on-pressing-press-enter-key-in-a-textfield)
 + If you want to test the game saving and rewatching features, you need to complete a game. Quick way to do this is [Fool's Mate](https://en.wikipedia.org/wiki/Fool%27s_mate)
+  + Or just try to beat the AI. It shouldn't be too difficult!
 
-How to compile it on linux with maven: <code>mvn compile exec:java -Dexec.mainClass=javachess.main.Main</code>
-
++ [Instructions on how to use the application](https://github.com/ShootingStar91/Javachess/blob/master/documentation/instructions.md)
 + [Architecture](https://github.com/ShootingStar91/Javachess/blob/master/documentation/architecture.md)
 + [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
 + [Working hours tracking](https://github.com/ShootingStar91/Javachess/blob/master/documentation/workinghours.md)
++ [Release 1 (week 5)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko5)
++ **[Release 2 (week 6)]**(https://github.com/ShootingStar91/Javachess/releases/tag/viikko6)
+
+# Command line instructions
+
+Compile: 
+```
+mvn compile exec:java -Dexec.mainClass=javachess.main.Main
+```
+
+Create .jar into /target/:
+```
+mvn package
+```
+
+Run tests:
+```
+mvn test
+```
+
+Create jacoco report of test coverage into /target/site/jacoco/:
+```
+mvn test jacoco:report
+```
+
+Create checkstyle report into /target/site/:
+```
+mvn jxr:jxr checkstyle:checkstyle
+```
+
+Create JavaDoc into /target/site/apidocs/:
+```
+mvn javadoc:javadoc
+```

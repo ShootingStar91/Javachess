@@ -184,6 +184,7 @@ public final class Game {
     }
     
     private Phase startTurn() {
+        generatePotentialMoves(whiteToMove);
         Phase phase = Phase.PLAY;
         updateKingSpots();
         updateAttackedSpots();

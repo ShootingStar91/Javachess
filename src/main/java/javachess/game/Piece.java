@@ -12,7 +12,6 @@ public class Piece {
     private PieceType type;
     private boolean white;
     private ArrayList<Spot> moves;
-    private char letter;
     
     public Piece(PieceType type, boolean isWhite) {
         this.type = type;
@@ -45,7 +44,6 @@ public class Piece {
      * is the parameter representing that type. 
      */
     public void setType(char letter) {
-        this.letter = letter;
         if (letter == 'p') {
             type = PieceType.PAWN;
         } else if (letter == 'n') {
@@ -76,9 +74,27 @@ public class Piece {
     public boolean isWhite() {
         return white;
     }
-
+    
+    /**
+     * Returns the letter corresponding to the type of this Piece
+     * @return 
+     */
     public String getLetter() {
-        return "" + letter;
+        switch (this.getType()) {
+            case PAWN:
+                return "p";
+            case KNIGHT:
+                return "n";
+            case ROOK:
+                return "r";
+            case BISHOP:
+                return "b";
+            case QUEEN:
+                return "q";
+            case KING:
+                return "k";
+        }
+        return "";
     }
     
     
