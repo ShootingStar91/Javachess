@@ -6,10 +6,9 @@ __Current state__:
 + Fully playable chess against human
 + Also against computer
   + Not an intelligent opponent yet, chooses random moves, but it's still proper chess
-  + There are rare occasions when playing against AI where the game announces stalemate even though it is checkmate. However checkmate is often correctly recognized. This is to be fixed to the last version.
 + Save games
 + Rewatch games
-
++ Erroneous game situation: In some cases the game will say it finished in a stalemate, even though it was actually a checkmate. This is still unrecognized but to be fixed. However, often it does recognize checkmate correctly.
 
 __Important:__ 
 + When saving a game, do not press enter in the dialog. Instead, click the OK-button with your mouse. Sometimes the application crashes if you press enter. This might be a bug of JavaFX interacting badly with the UI of OS, because [similar errors are reported on the web](https://stackoverflow.com/questions/18512654/jvm-crashes-on-pressing-press-enter-key-in-a-textfield)
