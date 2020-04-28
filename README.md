@@ -17,12 +17,15 @@ __Important:__
 + If you want to test the game saving and rewatching features, you need to complete a game. Quick way to do this is [Fool's Mate](https://en.wikipedia.org/wiki/Fool%27s_mate)
   + Or just try to beat the AI. It shouldn't be too difficult!
 
+# Links
+
++ [Code](https://github.com/ShootingStar91/Javachess/blob/master/src/)
 + [Instructions on how to use the application](https://github.com/ShootingStar91/Javachess/blob/master/documentation/instructions.md)
 + [Architecture](https://github.com/ShootingStar91/Javachess/blob/master/documentation/architecture.md)
 + [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
 + [Working hours tracking](https://github.com/ShootingStar91/Javachess/blob/master/documentation/workinghours.md)
 + [Release 1 (week 5)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko5)
-+ **[Release 2 (week 6)]**(https://github.com/ShootingStar91/Javachess/releases/tag/viikko6)
++ **[Release 2 (week 6)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko6)**
 
 # Command line instructions
 
