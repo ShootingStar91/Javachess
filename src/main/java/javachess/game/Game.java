@@ -189,12 +189,18 @@ public final class Game {
         updateKingSpots();
         updateAttackedSpots();
         if (noMovesLeft()) {
-            if (checked()) {
-                phase = Phase.CHECKMATE;
-            } else {
-                phase = Phase.STALEMATE;
+            String whoseTurn = "white";
+            if (!whiteToMove) {
+                whoseTurn = "black";
             }
-            return phase;
+            System.out.println("No moves left for " + whoseTurn);
+            if (checked()) {
+                System.out.println("They are also checked.");
+                return Phase.CHECKMATE;
+            } else {
+                System.out.println("But they are not checked.");
+                return Phase.STALEMATE;
+            }
         }
         if (turns == turnLimit) {
             return Phase.STALEMATE;
@@ -367,51 +373,44 @@ public final class Game {
     private void updateAttackedSpot(Spot spot) {
         Piece piece = board[spot.getX()][spot.getY()];
         if (piece.isWhite()) {
+            if (piece.getType() == PieceType.PAWN) {
+                addPawnAttacks(spot, true, -1);
+                return;
+            }
             for (Spot move : piece.getMoves()) {
                 whiteAttacks[move.getX()][move.getY()] = true;
             }
-            if (piece.getType() == PieceType.PAWN) {
-                addPawnAttacks(spot, true);
-            }
         } else {
+            if (piece.getType() == PieceType.PAWN) {
+                addPawnAttacks(spot, false, 1);
+                return;
+            }
             for (Spot move : piece.getMoves()) {
                 blackAttacks[move.getX()][move.getY()] = true;
             }
-            if (piece.getType() == PieceType.PAWN) {
-                addPawnAttacks(spot, false);
+        }
+    }
+
+    private void addPawnAttacks(final Spot spot, final boolean white,
+            int direction) {
+        Spot leftSpot = new Spot(spot.getX() - 1, spot.getY() + direction);
+        Spot rightSpot = new Spot(spot.getX() + 1, spot.getY() + direction);
+        if (leftSpot.onBoard()) {
+            if (white) {
+                whiteAttacks[leftSpot.getX()][leftSpot.getY()] = true;
+            } else {
+                blackAttacks[leftSpot.getX()][leftSpot.getY()] = true;
+            }
+        }
+        if (rightSpot.onBoard()) {
+            if (white) {
+                whiteAttacks[rightSpot.getX()][rightSpot.getY()] = true;
+            } else {
+                blackAttacks[rightSpot.getX()][rightSpot.getY()] = true;
             }
         }
     }
 
-    private void addPawnAttacks(final Spot spot, final boolean white) {
-        if (white) {
-            addWhitePawnAttacks(spot);
-        } else {
-            addBlackPawnAttacks(spot);
-        }
-    }
-    
-    private void addWhitePawnAttacks(Spot spot) {
-        Spot leftSpot = new Spot(spot.getX() - 1, spot.getY() - 1);
-        Spot rightSpot = new Spot(spot.getX() + 1, spot.getY() - 1);
-        if (leftSpot.onBoard()) {
-            whiteAttacks[leftSpot.getX()][leftSpot.getY()] = true;
-        }
-        if (rightSpot.onBoard()) {
-            whiteAttacks[rightSpot.getX()][rightSpot.getY()] = true;
-        }
-    }
-
-    private void addBlackPawnAttacks(Spot spot) {
-        Spot leftSpot = new Spot(spot.getX() - 1, spot.getY() + 1);
-        Spot rightSpot = new Spot(spot.getX() + 1, spot.getY() + 1);
-        if (leftSpot.onBoard()) {
-            blackAttacks[leftSpot.getX()][leftSpot.getY()] = true;
-        }
-        if (rightSpot.onBoard()) {
-            blackAttacks[rightSpot.getX()][rightSpot.getY()] = true;
-        }
-    }
     
     /**
      * Promotes a given pawn into the given type of piece and then finishes

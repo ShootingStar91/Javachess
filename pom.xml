@@ -50,7 +50,7 @@
                     <configuration>
                         <excludes>
                             <exclude>javachess/userinterface/*</exclude>
-                            <exclude>javachess/main/Main.*</exclude>
+                            <exclude>javachess/main/Main.class</exclude>
                         </excludes>
                     </configuration>
 

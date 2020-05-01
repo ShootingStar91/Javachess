@@ -11,7 +11,7 @@ public class Spot {
     
     int x;
     int y;
-    
+
     public Spot() {
         x = -1;
         y = -1;
