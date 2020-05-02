@@ -185,20 +185,14 @@ public final class Game {
     
     private Phase startTurn() {
         generatePotentialMoves(whiteToMove);
+        generatePotentialMoves(!whiteToMove);
         Phase phase = Phase.PLAY;
         updateKingSpots();
         updateAttackedSpots();
         if (noMovesLeft()) {
-            String whoseTurn = "white";
-            if (!whiteToMove) {
-                whoseTurn = "black";
-            }
-            System.out.println("No moves left for " + whoseTurn);
             if (checked()) {
-                System.out.println("They are also checked.");
                 return Phase.CHECKMATE;
             } else {
-                System.out.println("But they are not checked.");
                 return Phase.STALEMATE;
             }
         }

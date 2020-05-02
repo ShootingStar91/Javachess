@@ -98,7 +98,7 @@ public class UserInterface extends Application {
         });
         gamePane.add(returnToMenu, 7, 0);
         
-        window.setTitle("Javachess 0.8");
+        window.setTitle("Javachess 0.81");
         window.setMinHeight(400);
         window.setMinWidth(500);
         
