@@ -12,18 +12,23 @@ import java.util.Random;
 public final class AIEngine {
     
     Game game;
-    ArrayList<Spot> movesFrom;
-    ArrayList<Spot> movesTo;
+    //ArrayList<Spot> movesFrom;
+    //ArrayList<Spot> movesTo;
     HashMap<PieceType, double[][]> pieceScores;
+    private int searchDepth;
+    private int bestMoveIndex;
+    private final int maxSearchDepth = 3;
+    private int calc = 0;
     
     /**
      * Initializes the AIEngine
      * @param game The game object which will use this AI
      */
     public AIEngine(Game game) {
+        searchDepth = 0;
         this.game = game;
         pieceScores = new HashMap<>();
-        //initPieceScores();
+        initPieceScores();
     }
     
     private void initPieceScores() {
@@ -91,7 +96,7 @@ public final class AIEngine {
                 {-2, -3, -3, -4, -4, -3, -3, -2},
                 {-1, -2, -2, -2, -2, -2, -2, -1},
                 {2, 2, 0, 0, 0, 0, 2, 2},
-                {2, 3, 1, 0, 0, 1, 3, 2}};        
+                {2, 3, 1, 0, 0, 1, 3, 2}};
         addArrays(kingScores, kingPositionScores);
         pieceScores.put(PieceType.PAWN, pawnScores);
         pieceScores.put(PieceType.KNIGHT, knightScores);
@@ -120,7 +125,7 @@ public final class AIEngine {
                 typeScore = 30;
                 break;
             case BISHOP:
-                typeScore = 40;
+                typeScore = 30;
                 break;
             case ROOK:
                 typeScore = 50;
@@ -147,43 +152,106 @@ public final class AIEngine {
      * executing the move
      */
     public Phase doTurn() {
-        movesFrom = new ArrayList<>();
-        movesTo = new ArrayList<>();
-        Phase phase;
-        getMoves();
-        
-        int moveIndex = chooseMove();
-        phase = game.move(movesFrom.get(moveIndex), movesTo.get(moveIndex));
+        System.out.println("board score " + boardScore(game.getBoard()));
+        ArrayList<Spot> movesFrom = new ArrayList<>();
+        ArrayList<Spot> movesTo = new ArrayList<>();
+        getMoves(movesFrom, movesTo, game);
+        calc = 0;
+        //System.out.println("SIZE: " + movesFrom.size() + " " + movesTo.size() + " whitetomove="+game.whiteToMove());
+        double bestScore = -9999;
+        for (int i = 0; i < movesFrom.size(); i++) {
+            Spot from = movesFrom.get(i);
+            Spot to = movesTo.get(i);
+            Game gameCopy = game.copyGame();
+            Phase phase = gameCopy.move(from, to);
+            if (phase == Phase.PROMOTION) {
+                gameCopy.promote(to, PieceType.QUEEN);
+            }
+
+            double score = chooseMove(1, gameCopy, -10000, 10000);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMoveIndex = i;
+            }
+        }
+        //System.out.println("SIZE: " + movesFrom.size() + " " + movesTo.size() + " whitetomove="+game.whiteToMove());
+        //System.out.println(bestMoveIndex);
+
+        //getMoves(movesFrom, movesTo, game);
+        //System.out.println("SIZE: " + movesFrom.size() + " " + movesTo.size() + " whitetomove="+game.whiteToMove());
+        System.out.println("Moves searched: " + calc);
+        if (bestMoveIndex > movesFrom.size()) {
+            System.out.println("choosemove failed with index " + bestMoveIndex);
+            bestMoveIndex = movesFrom.size() - 1;
+            
+        }
+        Phase phase = game.move(movesFrom.get(bestMoveIndex), movesTo.get(bestMoveIndex));
         if (phase == Phase.PROMOTION) {
-            game.promote(movesTo.get(moveIndex), PieceType.QUEEN);
+            game.promote(movesTo.get(bestMoveIndex), PieceType.QUEEN);
             return Phase.PLAY;
         }
         
         return phase;
     }
+                /** 
+             * Random move:
+                Random random = new Random();
+                moveIndex = random.nextInt(movesFrom.size());
+            */
     
-    private int chooseMove() {
-        int moveIndex = -1;
-        /** Random move:*/
-        Random random = new Random();
-        
-        moveIndex = random.nextInt(movesFrom.size());
-        
-        /*
-        for (int i = 0; i < movesFrom.size(); i++) {
-            
+    /*
+        palauttaa vähiten huonon siirron
+    */
+    private double chooseMove(int depth, Game gameCopy, double alpha, double beta) {
+        calc++;
+        if (depth == maxSearchDepth) {
+            double score = boardScore(gameCopy.getBoard());
+            return score;
         }
-        */
-        return moveIndex;
+        
+        double score = -9999;
+        if (gameCopy.whiteToMove()) score *= -1;
+        ArrayList<Spot> movesFrom = new ArrayList<>();
+        ArrayList<Spot> movesTo = new ArrayList<>();
+        getMoves(movesFrom, movesTo, gameCopy);
+        
+        for (int i = 0; i < movesFrom.size(); i++) {
+            calc++;
+            Spot from = movesFrom.get(i);
+            Spot to = movesTo.get(i);
+            Game newGameCopy = gameCopy.copyGame();
+            Phase phase = newGameCopy.move(from, to);
+            if (phase == Phase.PROMOTION) {
+                newGameCopy.promote(to, PieceType.QUEEN);
+            }
+
+            if (!gameCopy.whiteToMove()) {
+                score = Math.max(chooseMove(depth + 1, newGameCopy, alpha, beta), score);
+                alpha = Math.max(alpha, score);
+                if (beta <= alpha) {
+                    return score;
+                }
+            } else {
+                score = Math.min(chooseMove(depth + 1, newGameCopy, alpha, beta), score);
+                beta = Math.min(beta, score);
+                if (beta <= alpha) {
+                    return score;
+                }
+            }
+        }
+
+        return score;
     }
     
-    private void getMoves() {
-        for (Spot spot : game.getPiecesOnBoard()) {
-            Piece piece = game.getBoard()[spot.getX()][spot.getY()];
-            if (piece.isWhite()) {
+    private void getMoves(ArrayList<Spot> movesFrom, ArrayList<Spot> movesTo, Game sourceGame) {
+        movesFrom.clear();
+        movesTo.clear();
+        for (Spot spot : sourceGame.getPiecesOnBoard()) {
+            Piece piece = sourceGame.getBoard()[spot.getX()][spot.getY()];
+            if (piece.isWhite() != sourceGame.whiteToMove()) {
                 continue;
             }
-            for (Spot moveTo : game.getMoves(spot)) {
+            for (Spot moveTo : sourceGame.getMoves(spot)) {
                 movesFrom.add(spot);
                 movesTo.add(moveTo);
             }
@@ -191,6 +259,10 @@ public final class AIEngine {
     }
     
     private double getPieceScore(Piece piece, Spot spot) {
+        if (!piece.isWhite()) { 
+            spot.setY(7 - spot.getY());
+            spot.setX(7- spot.getX());
+        }
         return pieceScores.get(piece.getType())[spot.getX()][spot.getY()];
     }
     
@@ -198,9 +270,16 @@ public final class AIEngine {
         double totalScore = 0;
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (board[x][y] == null) continue;
-                // noticed spot has swapped y x for ai positionscores:
-                totalScore += getPieceScore(board[x][y], new Spot(y, x));
+                Piece piece = board[x][y];
+                if (piece == null) continue;
+                // notice spot has swapped y x for ai positionscores:
+                double newScore = getPieceScore(piece, new Spot(y, x));
+                if (piece.isWhite()) {
+                    totalScore-=newScore;
+                    
+                } else {
+                    totalScore+=newScore;
+                }
             }
         }
         return totalScore;

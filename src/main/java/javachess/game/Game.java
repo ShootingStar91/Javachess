@@ -67,6 +67,40 @@ public final class Game {
 
     }
     
+    public Game copyGame() {
+        Game game = new Game(false);
+        game.whiteKingCastling = whiteKingCastling;
+        game.whiteQueenCastling = whiteQueenCastling;
+        game.blackKingCastling = blackKingCastling;
+        game.blackQueenCastling = blackQueenCastling;
+        game.enpassant = enpassant;
+        game.whiteToMove = whiteToMove;
+        game.whiteAttacks = copyArr(whiteAttacks);
+        game.blackAttacks = copyArr(blackAttacks);
+
+        for (int x = 0; x < boardSize; x++) {
+            for (int y = 0; y < boardSize; y++) {
+                if (board[x][y] == null) {
+                    game.board[x][y] = null;
+                    continue;
+                }
+                game.board[x][y] = new Piece(board[x][y].getType(), 
+                        board[x][y].isWhite());
+                game.board[x][y].putMoves(board[x][y].getMoves());
+            }
+        }
+        return game;
+    }
+    
+    private boolean[][] copyArr(boolean [][] array) {
+        boolean[][] newArray = new boolean[boardSize][boardSize];
+        for (int x = 0; x < boardSize; x++) {
+            for (int y = 0; y < boardSize; y++) {
+                newArray[x][y] = array[x][y];
+            }
+        }
+        return newArray;
+    }
 
     private void initMoves() {
         initKnightMoves();
@@ -319,6 +353,11 @@ public final class Game {
 
     private void detectAndExecuteEnPassant(final Spot from, final Spot to) {
         Piece piece = board[from.getX()][from.getY()];
+        
+        /** debugging print to be removed !!! */
+        if (piece == null) System.out.println("whitetomove="+whiteToMove+" trying to move: " + from.toString()
+                + " " + to.toString());
+        
         if (piece.getType() == PieceType.PAWN) {
             if (from.getX() != to.getX()
                     && board[to.getX()][to.getY()] == null) {

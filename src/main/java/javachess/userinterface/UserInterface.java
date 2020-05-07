@@ -28,7 +28,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
-import javafx.stage.Popup;
 
 /**
  *
@@ -47,7 +46,6 @@ public class UserInterface extends Application {
     ImageView [][] boardImages;
     HashMap<String, Image> images;
     ArrayList<Spot> highlightedSpots;
-    Popup promotionPopup;
     Stage window;
     Spot promotionSpot;
     Label turnLabel;
@@ -97,8 +95,14 @@ public class UserInterface extends Application {
             exitButton();
         });
         gamePane.add(returnToMenu, 7, 0);
+        Button cancelSelection = new Button("Return to main menu");
+        cancelSelection.setOnAction(event -> {
+            window.setScene(mainMenu);
+        });
+        selectionPane.add(cancelSelection, 7, 0);
+
         
-        window.setTitle("Javachess 0.81");
+        window.setTitle("Javachess 0.82");
         window.setMinHeight(400);
         window.setMinWidth(500);
         
@@ -211,6 +215,8 @@ public class UserInterface extends Application {
         exitOk();
     }
     
+    
+    
     public void exitOk() {
         game = null;
         watchingGame = false;
@@ -259,7 +265,6 @@ public class UserInterface extends Application {
             forward = null;
             backward = null;
             } else {
-            
             boardImages[3][0].setOnMouseClicked(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
@@ -376,7 +381,10 @@ public class UserInterface extends Application {
         dialog.setTitle("Game finished");
         dialog.setHeaderText(gameResult);
         
-        dialog.setContentText("Please write a title for the game to save it (or leave empty to not save it). \nNotice: Do not choose a name that you have used before. \nWARNING: Do not press enter! Click the OK button instead.");
+        dialog.setContentText("Please write a title for the game to save it (or" 
+                + " leave empty to not save it). \nNotice: Do not choose a name" 
+                + " that you have used before. \nWARNING: Do not press enter!" 
+                + " Click the OK button instead.");
 
         Optional<String> title = dialog.showAndWait();
         if (title.isPresent() && !(title.get().equals(""))) {

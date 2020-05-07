@@ -21,4 +21,6 @@
 | 21.4. | 8 | Rewrote lots of code to remove checkstyle errors, also added javafx-dialogues to save the game with a title, and fought with lots of bugs. Also updated documentation and made tests runnable. |
 | 28.4. | 7 | Added AIEngine class, slight modifications elsewhere, javadoc started, documentation improved |
 | 1.5.  | 2 | Fixed bug: pawn was attacking also the spot in front of it. This caused the stalemate/checkmate errors. Removed copypastey code. |
-| Total | 56 | |
+| 2.5.  | 4 | Fixed another stalemate-bug, started drafting AI move choosing algorithm |
+| 3.5.  | 5 | Wrote, tested and adjusted the move choosing algorithm: minmax with alpha-beta-pruning |
+| Total | 65 | |
