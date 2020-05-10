@@ -19,9 +19,10 @@ __Important:__
 + [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
 + [Testing document](https://github.com/ShootingStar91/Javachess/blob/master/documentation/testingdocument.md)
 + [Working hours tracking](https://github.com/ShootingStar91/Javachess/blob/master/documentation/workinghours.md)
-+ [Release 1 (week 5) (old)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko5)
-+ [Release 2 (week 6) (old)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko6)
-+ **[Release 3 (week 7) (Final version)](https://github.com/ShootingStar91/Javachess/releases/tag/viikko7)**
+
+# Release
+
++ **[Final release](https://github.com/ShootingStar91/Javachess/releases/tag/viikko7)**
 
 # Command line instructions
 
