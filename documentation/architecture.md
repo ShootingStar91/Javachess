@@ -6,13 +6,15 @@ Main-class is here omitted, since it's only purpose is to launch UserInterface-c
 
 Packages explained:
 + **ui** is responsible for showing user interface and telling game-class what input user has given. This all happens in UserInterface-class.
-+ **game** has the game logic classes, which are:
++ **game** has the game logic classes and enums, which are:
   + **Game** which handles the main logic of the chess game. It changes turns and saves each board on every turn to memory. It uses the Board-class to remember where the pieces are and interacts with it to generate all potential moves on each turn.
   + **Board** represents the chessboard with its pieces. It also saves variables that tell if the kings or rooks have been moved, which will prevent castling. It provides different methods for the Game-class to use in generating moves and checking if the game is in checkmate or not.
   + **AIEngine** is the engine of the AI-opponent. It chooses the best possible move for black player by the means of a minmax-algorithm. It has to know the Game-object which is used in playing in order to function.
   + **Spot** to represent a spot on the board (defined by integers x and y)
   + **Move** to represent a chess move, defined by two spots: "from" and "to" which have getters and setters
   + **Piece** to represent a single piece on board
+  + **PieceType** is an enum which represents the different chesspieces such as PAWN and KING.
+  + **Phase** is an enum which represents the games phase or state. PLAY is the default where the next player has moves left. CHECKMATE is when player has won. STALEMATE means a tie as defined by the chess rules. PROMOTION means that a pawn is promoted, and the Game-class wants input from either a user or AI Engine to know which piece type the pawn is promoted to.
 + **dao** has class Dao, which contains all methods that deal with saving and loading games, and it is used through ui-package
 
 # User interface
