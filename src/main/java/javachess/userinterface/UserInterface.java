@@ -13,6 +13,8 @@ import javachess.game.PieceType;
 import javachess.game.Spot;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -23,6 +25,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.InnerShadow;
@@ -81,15 +84,17 @@ public class UserInterface extends Application {
         turn = 0;
         selectionPane = new GridPane();
         gamePane.add(thinkingIcon, 2, 0);
+        
         try {
             gameDao = new Dao("javachessDatabase.db");
         } catch (Exception e) {
         }
+        
         gameSelectionScene = new Scene(selectionPane);
-        selectionPane.setPadding(new Insets(100, 100, 100, 100));
-        selectionPane.setVgap(20);
-        selectionPane.setHgap(20);
-
+        selectionPane.setPadding(new Insets(10, 10, 10, 10));
+        selectionPane.setVgap(10);
+        selectionPane.setHgap(10);
+        
         initImages();
         gameWindow.getIcons().add(images.get("qll"));
 
@@ -113,7 +118,7 @@ public class UserInterface extends Application {
         cancelSelection.setOnAction(event -> {
             window.setScene(mainMenu);
         });
-        selectionPane.add(cancelSelection, 7, 0);
+        selectionPane.add(cancelSelection, 2, 0);
         
         window.setTitle("Javachess 1.0");
         window.setMinHeight(400);
@@ -121,6 +126,7 @@ public class UserInterface extends Application {
         
         GridPane pane = new GridPane();
         mainMenu = new Scene(pane);
+        pane.setMinSize(500, 500);
 
         pane.setVgap(10);
         pane.setHgap(10);
@@ -192,6 +198,9 @@ public class UserInterface extends Application {
                alert.showAndWait();
             }
         });
+        playHuman.setMinWidth(250);
+        playAI.setMinWidth(250);
+        rewatch.setMinWidth(250);
         pane.add(label, 0, 0);
         pane.add(playHuman, 0, 2);
         pane.add(playAI, 0, 3);
@@ -229,30 +238,32 @@ public class UserInterface extends Application {
         if (availableGames == null || availableGames.isEmpty()) {
             gamesAvailable = false;
         } else {
-            int buttonId = 1;
-            for (String title : availableGames) {
-                Button button = new Button(title);
-                button.setMinWidth(300);
-                button.setMaxWidth(300);
-                final int finalButtonId = buttonId;
-                button.setOnAction(event -> {
-                    boardHistory = gameDao.load(finalButtonId);
-                    turn = 0;
-                    watchingGame = true;
-                    window.setScene(gameScene);
-                    showRewatchButtons(true);
-                    drawBoard();
-                });
-                selectionPane.add(button, buttonCol, buttonRow);
-                if (buttonCol > 5) {
-                    buttonCol = 2;
-                    buttonRow++;
-                    buttonId++;
-                } else {
-                    buttonCol++;
-                    buttonId++;
+            ListView<String> listView = new ListView<>();
+            ObservableList<String> items = FXCollections.observableArrayList(availableGames);
+            listView.setItems(items);
+            listView.setPrefWidth(350);
+            listView.setPrefHeight(450);
+            Button watchButton = new Button("Watch game");
+            watchButton.setOnAction(event -> {
+                int selectedIndex = listView.getSelectionModel().getSelectedIndex() + 1;
+                if (selectedIndex < 1) {
+                    Alert alert = new Alert(AlertType.INFORMATION);
+                    alert.setTitle("Select game");
+                    alert.setHeaderText(null);
+                    alert.setContentText("You must select from the list which game you want to rewatch!");
+                    alert.showAndWait();                    
+                    return;
                 }
-            }
+                boardHistory = gameDao.load(selectedIndex);
+                turn = 0;
+                watchingGame = true;
+                window.setScene(gameScene);
+                showRewatchButtons(true);
+                drawBoard();
+            });
+            selectionPane.add(listView, 0, 0);
+            selectionPane.add(watchButton, 0, 2);
+            watchButton.setPrefWidth(350);
         }
         return gamesAvailable;
     }
