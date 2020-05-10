@@ -41,7 +41,7 @@ The following sequence diagram explains how the AIEngine is put to work by the U
 
 # Saving games
 
-The saving of the games is done through sqlite using jdbc. The application will check if there is a file named "JavachessDatabase.db" in the root folder of the game, and if there is not, it will create it.
+The saving of the games is done through sqlite using jdbc. The application will check if there is a file named "javachessDatabase.db" in the root folder of the game, and if there is not, it will create it.
 
 The database has one table Savedgames with three columns: id (primary key), name (title for the game) and boardhistory, which is a string that the load-method can parse and understand as a complete chessgame.
 
