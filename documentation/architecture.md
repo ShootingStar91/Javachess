@@ -50,3 +50,5 @@ The database has one table Savedgames with three columns: id (primary key), name
 The application logic was good, but there was some weaknesses. The game- and board- classes division is not completely clear: Some methods in them could belong in the other class. They were originally just one Game-class, but its length was close to 900 lines, and the checkstyle rules limited file length to 500. However, they do have a somewhat reasonable division: The game-class is more like a chess player who looks at the board and thinks where they can move, whereas the Board-class represents a "dead" board and does not itself generate any moves.
 
 The AI Engine could be faster if the Game-class was optimized better. It has some repetition: clearing attacked spots and updating them again many times inside one turn. A different architecture might have made these repetitions easier to spot and fix.
+
+One method in AIEngine class exceeds the maximum length of 20 lines by about 10 lines. I let this be because the method felt very difficult to divide, it is the recursive alpha-beta-pruned minmax algorithm.
