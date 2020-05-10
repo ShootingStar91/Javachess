@@ -37,6 +37,10 @@ public class Piece {
         setType(letter);
     }
     
+    public Piece copy() {
+        return new Piece(type, white);
+    }
+    
     /**
      * Set the type of this piece.
      * @param letter Letter representing the type:
@@ -61,7 +65,7 @@ public class Piece {
     
     public void setType(PieceType type) {
         this.type = type; 
-   }
+    }
     
     public PieceType getType() {
         return type;
@@ -73,6 +77,13 @@ public class Piece {
     
     public ArrayList<Spot> getMoves() {
         return moves;
+    }
+    
+    public void addMove(Spot moveTo) {
+        if (moves == null) {
+            moves = new ArrayList<>();
+        }
+        moves.add(moveTo);
     }
     
     public boolean isWhite() {

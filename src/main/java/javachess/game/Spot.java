@@ -11,14 +11,22 @@ public class Spot {
     
     int x;
     int y;
+    Board board;
 
-    public Spot() {
-        x = -1;
-        y = -1;
-    }
+
     public Spot(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+    
+    public Spot(int x, int y, Board board) {
+        this.board = board;
+        this.x = x;
+        this.y = y;
+    }
+    
+    public Piece get() {
+        return board.get(x, y);
     }
     
     public int getX() { 
@@ -38,7 +46,7 @@ public class Spot {
     
     /**
      * Checks if the spot is on the chess board.
-     * @return boolean value indicating if this spot is within the limits of 
+     * @return value indicating if this spot is within the limits of 
      * the board
      */
     public boolean onBoard() {

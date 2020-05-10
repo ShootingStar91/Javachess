@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Optional;
 import javachess.dao.Dao;
+import javachess.game.AIEngine;
 import javachess.game.Game;
+import javachess.game.Move;
 import javachess.game.Phase;
 import javachess.game.Piece;
 import javachess.game.PieceType;
 import javachess.game.Spot;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -20,6 +23,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.effect.InnerShadow;
 import javafx.scene.image.Image;
@@ -39,6 +43,7 @@ public class UserInterface extends Application {
     Dao gameDao;
     Scene mainMenu, gameScene, gameSelectionScene;
     Game game;
+    boolean againstAI;
     boolean pieceSelected;
     Spot selectedPiece;
     GridPane gamePane;
@@ -52,14 +57,20 @@ public class UserInterface extends Application {
     ArrayList<Piece[][]> boardHistory;
     boolean watchingGame;
     int turn;
-    
+    boolean AIThinking;
+    AIEngine ai;
+    private boolean playersTurn;
+    private ProgressIndicator thinkingIcon;
     
     @Override
     public void start(Stage gameWindow) {
+        thinkingIcon = new ProgressIndicator();
+        thinkingIcon.setVisible(false);
+        playersTurn = true;
         window = gameWindow;
         images = new HashMap<>();
         pieceSelected = false;
-        selectedPiece = new Spot();
+        selectedPiece = new Spot(-1, -1);
         boardImages = new ImageView[8][9];
         gamePane = new GridPane();
         gamePane.setPadding(new Insets(20, 20, 20, 20));
@@ -69,13 +80,16 @@ public class UserInterface extends Application {
         watchingGame = false;
         turn = 0;
         selectionPane = new GridPane();
-        gameDao = new Dao();
+        gamePane.add(thinkingIcon, 2, 0);
+        try {
+            gameDao = new Dao("javachessDatabase.db");
+        } catch (Exception e) {
+        }
         gameSelectionScene = new Scene(selectionPane);
         selectionPane.setPadding(new Insets(100, 100, 100, 100));
         selectionPane.setVgap(20);
         selectionPane.setHgap(20);
 
-        
         initImages();
         gameWindow.getIcons().add(images.get("qll"));
 
@@ -100,9 +114,8 @@ public class UserInterface extends Application {
             window.setScene(mainMenu);
         });
         selectionPane.add(cancelSelection, 7, 0);
-
         
-        window.setTitle("Javachess 0.82");
+        window.setTitle("Javachess 1.0");
         window.setMinHeight(400);
         window.setMinWidth(500);
         
@@ -114,13 +127,9 @@ public class UserInterface extends Application {
         pane.setAlignment(Pos.CENTER);
         pane.setPadding(new Insets(50, 50, 50, 50));
         
-        
-        
-                
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 9; y++) {
                 ImageView imageView = new ImageView();
-                
                 imageView.setOnMouseClicked(new EventHandler<MouseEvent>() {
                     @Override
                     public void handle(MouseEvent event) {
@@ -128,9 +137,7 @@ public class UserInterface extends Application {
                         int row = GridPane.getRowIndex(imageView);
                         int col = GridPane.getColumnIndex(imageView);
                         drawBoard();
-                        
                         if (row == 0 && col >= 2 && col <=5) {
-                            
                             PieceType type = PieceType.QUEEN;
                             switch (col) {
                                 case 2:
@@ -158,26 +165,20 @@ public class UserInterface extends Application {
                 gamePane.add(imageView, x, y);
             }
         }
-
         Label label = new Label();
         label.setText("Welcome to play chess!");
         Button playHuman = new Button();
         playHuman.setText("Play against human");
-
         playHuman.setOnAction(event -> {
             startGame(false);
 
         });
-        
-        
-        
         Button playAI = new Button();
         playAI.setText("Play against AI");
-        
         playAI.setOnAction(event -> {
+            againstAI = true;
             startGame(true);
         });
-        
         Button rewatch = new Button();
         rewatch.setText("Rewatch a previously played game");
         rewatch.setOnAction(event -> {
@@ -191,12 +192,10 @@ public class UserInterface extends Application {
                alert.showAndWait();
             }
         });
-
         pane.add(label, 0, 0);
         pane.add(playHuman, 0, 2);
         pane.add(playAI, 0, 3);
         pane.add(rewatch, 0, 4);
-
         window.setScene(mainMenu);
         window.show();
     }
@@ -214,12 +213,11 @@ public class UserInterface extends Application {
         }
         exitOk();
     }
-    
-    
-    
+
     public void exitOk() {
         game = null;
         watchingGame = false;
+        againstAI = false;
         window.setScene(mainMenu);
     }
     
@@ -227,31 +225,32 @@ public class UserInterface extends Application {
         boolean gamesAvailable = true;
         int buttonRow = 2;
         int buttonCol = 2;
-       
-        ArrayList<String> availableGames = gameDao.getAvailableGames();
+        ArrayList<String> availableGames = gameDao.loadAllTitles();
         if (availableGames == null || availableGames.isEmpty()) {
             gamesAvailable = false;
         } else {
+            int buttonId = 1;
             for (String title : availableGames) {
-
                 Button button = new Button(title);
-
+                button.setMinWidth(300);
+                button.setMaxWidth(300);
+                final int finalButtonId = buttonId;
                 button.setOnAction(event -> {
-                    boardHistory = gameDao.load(title);
+                    boardHistory = gameDao.load(finalButtonId);
                     turn = 0;
                     watchingGame = true;
                     window.setScene(gameScene);
                     showRewatchButtons(true);
                     drawBoard();
                 });
-
                 selectionPane.add(button, buttonCol, buttonRow);
-
-                if (buttonCol > 6) {
+                if (buttonCol > 5) {
                     buttonCol = 2;
                     buttonRow++;
+                    buttonId++;
                 } else {
                     buttonCol++;
+                    buttonId++;
                 }
             }
         }
@@ -289,7 +288,6 @@ public class UserInterface extends Application {
     }
     
     public void showPromotionBar(boolean visible) {
-        
         if (visible) {
             String playerLetter = "d";
             if (!game.whiteToMove()) {
@@ -308,59 +306,82 @@ public class UserInterface extends Application {
     }
     
     public void clickedOn(int col, int row) {
-        if (highlightedSpots!=null) {
-        
+        if (!playersTurn) return;
+        if (highlightedSpots != null) {
             if (!highlightedSpots.isEmpty()) {
                 for (Spot spot : highlightedSpots) {
                     if (spot.getX()==col && spot.getY()==row) {
-                        move(spot);
-                        highlightedSpots=null;
-                        drawBoard();
-                        
+                        highlightedSpots = null;
+                        if (againstAI) {
+                        new Thread(() -> {
+                            move(spot);
+                            drawBoard();
+                            showThinkingIcon(true);
+                            playersTurn = false;
+                            Phase phase = ai.doTurn();
+                            if (phase != Phase.PLAY) {
+                                Platform.runLater(()-> {
+                                    drawBoard();
+                                    gameFinished(phase);
+                                });
+                            } else {
+                                Platform.runLater(() -> {
+                                   drawBoard(); 
+                                });
+                            }
+                            showThinkingIcon(false);
+                            playersTurn = true;
+                        }).start();
+                        } else {
+                            move(spot);
+                            drawBoard();
+                        }
                         return;
                     }
                 }
                 highlightedSpots = null;
                 drawBoard();
-
             }
         }
-        
-        
         selectedPiece = new Spot(col, row);
-        if (game.getBoard()[col][row] != null && game.getBoard()[col][row].isWhite() != game.whiteToMove()) return;
-        
+        if (game.getBoard().get(col, row) != null && game.getBoard().
+                get(col, row).isWhite() != game.whiteToMove()) return;
         highlight(col, row);
-        
+    }
+    
+    public void showThinkingIcon(boolean visible) {
+        Platform.runLater(() -> {
+            thinkingIcon.setVisible(visible);
+        });
     }
     
     public void highlight(int col, int row) {
-        highlightedSpots = game.getMoves(new Spot(col, row));
-        if (highlightedSpots==null) return;
+        if (game.getBoard().get(new Spot(col, row)) != null) {
+            if (!againstAI || (game.whiteToMove() && playersTurn)) {
+                highlightedSpots = game.getBoard().get(new Spot(col, row))
+                    .getMoves();
+            }
+        } else {
+            highlightedSpots = null;
+        }
+        if (highlightedSpots == null) return;
         for (Spot move : highlightedSpots) {
             InnerShadow innerShadow = new InnerShadow();
             innerShadow.setRadius(14);
             boardImages[move.getX()][move.getY()+1].setEffect(innerShadow);
         }
-        
     }
-    
+
     public void move(Spot to) {
-        Phase phase = game.move(selectedPiece, to);
-        if (phase == Phase.CHECKMATE || phase == Phase.STALEMATE) {
-            highlightedSpots = null;
-            drawBoard();
-            gameFinished(phase);
-            return;
-        } else if (phase == Phase.PROMOTION) {
-            showPromotionBar(true);
-            promotionSpot = to;
-        }
-        drawBoard();
+            Phase phase = game.move(new Move(selectedPiece, to));
+            if (phase == Phase.CHECKMATE || phase == Phase.STALEMATE) {
+                highlightedSpots = null;
+                gameFinished(phase);
+            } else if (phase == Phase.PROMOTION) {
+                promotionSpot = to;
+                showPromotionBar(true);
+            }
     }
-    
-    
-    
     
     public void gameFinished(Phase phase) {
         TextInputDialog dialog = new TextInputDialog();
@@ -380,81 +401,71 @@ public class UserInterface extends Application {
         }
         dialog.setTitle("Game finished");
         dialog.setHeaderText(gameResult);
-        
         dialog.setContentText("Please write a title for the game to save it (or" 
-                + " leave empty to not save it). \nNotice: Do not choose a name" 
-                + " that you have used before. \nWARNING: Do not press enter!" 
-                + " Click the OK button instead.");
-
+                + " leave empty to not save it) and then click the OK button, do not press Enter.");
         Optional<String> title = dialog.showAndWait();
         if (title.isPresent() && !(title.get().equals(""))) {
             String newTitle = title.get();
+            if (newTitle.length() > 60) {
+                newTitle = newTitle.substring(0, 40);
+            }
             gameDao.save(game, newTitle);
         }
         exitOk();
-
     }
     
-    
-    
-    
     public void drawBoard() {
-        if (game == null && !watchingGame) {
-            return;
-        }
-        Piece[][] board;
-        
-        if (watchingGame) {
-            board = boardHistory.get(turn);
-        } else {
-            board = game.getBoard();
-        }
-        
-        for (int x = 0; x < 8; x++) {
-            for (int y = 0; y < 8; y++) {
-                String img = "";
-                String bg = "";
-               
-                if (board[x][y] != null) {
-                    img += board[x][y].getLetter();
-                }
-                if (x % 2 == y % 2) {
-                    bg += "l";
-                } else {
-                    bg += "d";
-                }
-                
-                if (board[x][y]==null) {
-                    img = bg;
-                } else if (board[x][y].isWhite()) {
-                    img += "l";
-                    img += bg;
-                } else {
-                    img += "d";
-                    img += bg;
-                }
-                
-                
-                boardImages[x][y + 1].setImage(images.get(img));
-                boardImages[x][y + 1].setEffect(null);
+            if (game == null && !watchingGame) {
+                return;
             }
-        }
-        int turns = turn / 2;
-        if (!watchingGame) turns = game.getTurn();
-        turnLabel.setText("Turn: " + turns);
+            Piece[][] board;
+            if (watchingGame) {
+                board = boardHistory.get(turn);
+            } else {
+                board = game.getBoard().getBoard();
+            }
+
+            for (int x = 0; x < 8; x++) {
+                for (int y = 0; y < 8; y++) {
+                    String img = "";
+                    String bg = "";
+
+                    if (board[x][y] != null) {
+                        img += board[x][y].getLetter();
+                    }
+                    if (x % 2 == y % 2) {
+                        bg += "l";
+                    } else {
+                        bg += "d";
+                    }
+
+                    if (board[x][y]==null) {
+                        img = bg;
+                    } else if (board[x][y].isWhite()) {
+                        img += "l";
+                        img += bg;
+                    } else {
+                        img += "d";
+                        img += bg;
+                    }
+                    boardImages[x][y + 1].setImage(images.get(img));
+                    boardImages[x][y + 1].setEffect(null);
+                }
+            }
+            int turns = turn / 2;
+            if (!watchingGame) turns = game.getTurn();
+            turnLabel.setText("Turn: " + turns);
     }
     
     public void startGame(boolean againstAI) {
-        
         watchingGame = false;
-        
-        game = new Game(againstAI);
-        
+        game = new Game(false);
+        if (againstAI) {
+            ai = new AIEngine(game);
+        }
         drawBoard();
-        
         showRewatchButtons(false);
         window.setScene(gameScene);
-        
     }
     
     public void initImages() {

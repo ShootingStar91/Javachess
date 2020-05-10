@@ -13,437 +13,77 @@ import java.util.Iterator;
  * @author Arttu Kangas
  */
 public final class Game {
-
-    private boolean whiteKingCastling;
-    private boolean whiteQueenCastling;
-    private boolean blackQueenCastling;
-    private boolean blackKingCastling;
-    private boolean againstAI;
     private int turns;
     private boolean whiteToMove;
-    private ArrayList<Spot> bishopDirections;
-    private ArrayList<Spot> rookDirections;
-    private Piece[][] board;
-    private ArrayList<Spot> knightMoves;
-    private boolean[][] whiteAttacks;
-    private boolean[][] blackAttacks;
-    private Spot whiteKingSpot;
-    private Spot blackKingSpot;
+    private Board board;
     private int enpassant;
-    private final int boardSize = 8;
     private final int kingX = 4;
-    private final int blackSide = 0;
-    private final int whiteSide = 7;
-    private final int knightJump = 2;
     private final int enpassantDisabled = -2;
     private final int turnLimit = 50;
-    private AIEngine ai;
+    private boolean copiedGame;
     ArrayList<Piece[][]> boardHistory;
-
     /**
      * The constructor of a game. It can create a game between humans, or
      * with an AI opponent.
-     * @param againstAI 
+     * @param copiedGame set this to true if the game is a copy created
+     * inside AIEngine, otherwise set it to false. Prevents unnecessary
+     * saving of board history to optimize.
      */
-    public Game(final boolean againstAI) {
-        
-        this.againstAI = againstAI;
-        
-        if (againstAI) {
-            ai = new AIEngine(this);
-        }
-
-        initMoves();
-
+    public Game(boolean copiedGame) {
+        this.copiedGame = copiedGame;
         initClassVariables();
-
-        initPawns();
-
-        initPieces();
-
-        boardHistory.add(copyBoard());
-        
-        generatePotentialMoves(whiteToMove);
-
-    }
-    
-    public Game copyGame() {
-        Game game = new Game(false);
-        game.whiteKingCastling = whiteKingCastling;
-        game.whiteQueenCastling = whiteQueenCastling;
-        game.blackKingCastling = blackKingCastling;
-        game.blackQueenCastling = blackQueenCastling;
-        game.enpassant = enpassant;
-        game.whiteToMove = whiteToMove;
-        game.whiteAttacks = copyArr(whiteAttacks);
-        game.blackAttacks = copyArr(blackAttacks);
-
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                if (board[x][y] == null) {
-                    game.board[x][y] = null;
-                    continue;
-                }
-                game.board[x][y] = new Piece(board[x][y].getType(), 
-                        board[x][y].isWhite());
-                game.board[x][y].putMoves(board[x][y].getMoves());
-            }
+        if (!copiedGame) {
+            boardHistory.add(board.copyRawBoard());
         }
-        return game;
-    }
-    
-    private boolean[][] copyArr(boolean [][] array) {
-        boolean[][] newArray = new boolean[boardSize][boardSize];
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                newArray[x][y] = array[x][y];
-            }
-        }
-        return newArray;
-    }
-
-    private void initMoves() {
-        initKnightMoves();
-        initBishopDirections();
-        initRookDirections();
-    }
-    
-    private void initBishopDirections() {
-        bishopDirections = new ArrayList<>();
-        bishopDirections.add(new Spot(-1, -1));
-        bishopDirections.add(new Spot(-1, 1));
-        bishopDirections.add(new Spot(1, 1));
-        bishopDirections.add(new Spot(1, -1));
-    }
-    
-    private void initRookDirections() {
-        rookDirections = new ArrayList<>();
-        rookDirections.add(new Spot(0, -1));
-        rookDirections.add(new Spot(-1, 0));
-        rookDirections.add(new Spot(0, 1));
-        rookDirections.add(new Spot(1, 0));
-    }
-    
-    private void initKnightMoves() {
-        knightMoves = new ArrayList<>();
-        knightMoves.add(new Spot(1, knightJump));
-        knightMoves.add(new Spot(knightJump, 1));
-        knightMoves.add(new Spot(-1, knightJump));
-        knightMoves.add(new Spot(1, -knightJump));
-        knightMoves.add(new Spot(-1, -knightJump));
-        knightMoves.add(new Spot(-knightJump, 1));
-        knightMoves.add(new Spot(knightJump, -1));
-        knightMoves.add(new Spot(-knightJump, -1));
-    }
-
-    private void initClassVariables() {
-        whiteAttacks = new boolean[boardSize][boardSize];
-        blackAttacks = new boolean[boardSize][boardSize];
-        whiteToMove = true;
-        turns = 0;
-        whiteKingCastling = true;
-        whiteQueenCastling = true;
-        blackQueenCastling = true;
-        blackKingCastling = true;
-        enpassant = enpassantDisabled;
-        board = new Piece[boardSize][boardSize];
-        boardHistory = new ArrayList<>();
-        
-    }
-
-    private void initPawns() {
-        for (int x = 0; x < boardSize; x++) {
-            board[x][blackSide + 1] = new Piece(PieceType.PAWN, false);
-            board[x][whiteSide - 1] = new Piece(PieceType.PAWN, true);
-        }
-    }
-    
-    public ArrayList<Piece[][]> getBoardHistory() {
-        return boardHistory;
-    }
-
-    private void initPieces() {
-        board[0][0] = new Piece(PieceType.ROOK, false);
-        board[whiteSide][0] = new Piece(PieceType.ROOK, false);
-        board[0][whiteSide] = new Piece(PieceType.ROOK, true);
-        board[whiteSide][whiteSide] = new Piece(PieceType.ROOK, true);
-        board[1][0] = new Piece(PieceType.KNIGHT, false);
-        board[whiteSide - 1][0] = new Piece(PieceType.KNIGHT, false);
-        board[1][whiteSide] = new Piece(PieceType.KNIGHT, true);
-        board[whiteSide - 1][whiteSide] = new Piece(PieceType.KNIGHT, true);
-        board[knightJump][0] = new Piece(PieceType.BISHOP, false);
-        board[kingX + 1][0] = new Piece(PieceType.BISHOP, false);
-        board[knightJump][whiteSide] = new Piece(PieceType.BISHOP, true);
-        board[kingX + 1][whiteSide] = new Piece(PieceType.BISHOP, true);
-        board[kingX - 1][0] = new Piece(PieceType.QUEEN, false);
-        board[kingX - 1][whiteSide] = new Piece(PieceType.QUEEN, true);
-        board[kingX][0] = new Piece(PieceType.KING, false);
-        board[kingX][whiteSide] = new Piece(PieceType.KING, true);
-        whiteKingSpot = new Spot(kingX, whiteSide);
-        blackKingSpot = new Spot(kingX, blackSide);
-    }
-
-    private void clearMoves() {
-        for (Spot spot : getPiecesOnBoard()) {
-            board[spot.getX()][spot.getY()].putMoves(new ArrayList<>());
+        if (!copiedGame) {
+            generatePotentialMoves(whiteToMove);
         }
     }
 
     /**
+     * Produces a copy of this Game-object for the use of AIEngine.
+     * @return A copy of this object
+     */
+    public Game copyGame() {
+        Game game = new Game(true);
+        game.enpassant = enpassant;
+        game.whiteToMove = whiteToMove;
+        game.board = board.copyBoard();
+        generatePotentialMoves(whiteToMove);
+        return game;
+    }
+    
+    private void initClassVariables() {
+        whiteToMove = true;
+        turns = 0;
+        enpassant = enpassantDisabled;
+        board = new Board();
+        boardHistory = new ArrayList<>();
+    }
+    
+    /**
      * Method which executes a move and completes the turn or tells the caller
      * to ask player for promotion.
-     * @param from Spot where the piece to be moved is located now
-     * @param to Spot where the piece will be moved to
+     * @param move Move to be processed and executed
      * @return Phase which the game is in after the move is executed
      */
-    public Phase move(final Spot from, final Spot to) {
-        clearMoves();
-
+    public Phase move(Move move) {
+        board.clearMoves();
         if (whiteToMove) {
             whiteToMove = false;
         } else {
             turns++;
             whiteToMove = true;
         }
-
-        Spot promotion = executeMove(from, to, false);
-
-        boardHistory.add(copyBoard());
-        
+        Spot promotion = processMove(move, false);
+        if (!copiedGame) {
+            boardHistory.add(board.copyRawBoard());
+        }
         if (promotion != null) {
             return Phase.PROMOTION;
         }
-        generatePotentialMoves(whiteToMove);
         return startTurn();
     }
-    
-    private Phase startTurn() {
-        generatePotentialMoves(whiteToMove);
-        generatePotentialMoves(!whiteToMove);
-        Phase phase = Phase.PLAY;
-        updateKingSpots();
-        updateAttackedSpots();
-        if (noMovesLeft()) {
-            if (checked()) {
-                return Phase.CHECKMATE;
-            } else {
-                return Phase.STALEMATE;
-            }
-        }
-        if (turns == turnLimit) {
-            return Phase.STALEMATE;
-        }
-        if (againstAI && !whiteToMove) {
-            phase = ai.doTurn();
-        }
-        return phase;
-    }
-
-    private boolean noMovesLeft() {
-        for (Spot spot : getPiecesOnBoard()) {
-            if (board[spot.getX()][spot.getY()].isWhite() == whiteToMove) {
-                if (getMoves(spot) != null && getMoves(spot).size() > 0) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void generatePotentialMoves(final boolean white) {
-        if (white == whiteToMove) {
-            clearAttacked();
-        }
-        for (Spot spot : getPiecesOnBoard()) {
-            if (board[spot.getX()][spot.getY()].isWhite() != white) {
-                continue;
-            }
-            ArrayList<Spot> moves = getPotentialMoves(spot);
-            if (white == whiteToMove) {
-                moves = detectChecks(spot, moves);
-            }
-            board[spot.getX()][spot.getY()].putMoves(moves);
-        }
-        if (white != whiteToMove) {
-            return;
-        }
-        addCastling();
-    }
-    
-    private void addCastling() {
-        if (whiteToMove) {
-            if (castling(true, true)) {
-                board[kingX][whiteSide].getMoves()
-                        .add(new Spot(whiteSide, whiteSide));
-            }
-            if (castling(true, false)) {
-                board[kingX][whiteSide].getMoves()
-                        .add(new Spot(0, whiteSide));
-            }
-        } else {
-            if (castling(false, true)) {
-                board[kingX][0].getMoves().add(new Spot(whiteSide, 0));
-            }
-            if (castling(false, false)) {
-                board[kingX][0].getMoves().add(new Spot(0, 0));
-            }
-        }
-    }
-
-    private Spot executeMove(final Spot from, final Spot to,
-            final boolean superficial) {
-        Piece piece = board[from.getX()][from.getY()];
-        doSpecialMove(from, to);
-        if (superficial) {
-            return null;
-        }
-        if (piece.getType() == PieceType.KING) {
-            disableCastlingFromKing(piece);
-        } else if (piece.getType() == PieceType.ROOK) {
-            disableCastlingFromRook(piece, from);
-        }
-        disableCastling(from);
-        updateEnPassant(piece, from, to);
-        if (piece.getType() == PieceType.PAWN && (to.getY() == 0
-                || to.getY() == whiteSide)) {
-            return to;
-        }
-        return null;
-    }
-    
-    private void doSpecialMove(Spot from, Spot to) {
-        detectAndExecuteEnPassant(from, to);
-        if (!detectAndExecuteCastling(from, to)) {
-            board[to.getX()][to.getY()] = board[from.getX()][from.getY()];
-            board[from.getX()][from.getY()] = null;
-        }
-    }
-
-    private void disableCastlingFromKing(final Piece piece) {
-        if (piece.isWhite()) {
-            whiteKingCastling = false;
-            whiteQueenCastling = false;
-        } else {
-            blackKingCastling = false;
-            blackQueenCastling = false;
-        }
-    }
-
-    private void updateEnPassant(final Piece piece, final Spot from,
-            final Spot to) {
-        if (piece.getType() == PieceType.PAWN
-                && Math.abs(from.getY() - to.getY()) == knightJump) {
-            enpassant = from.getX();
-        } else {
-            enpassant = enpassantDisabled;
-        }
-    }
-
-    private void disableCastlingFromRook(final Piece piece, final Spot from) {
-        if (piece.isWhite() && from.getX() == 0) {
-            whiteQueenCastling = false;
-        } else if (piece.isWhite() && from.getX() == whiteSide) {
-            whiteKingCastling = false;
-        } else if (!piece.isWhite() && from.getX() == 0) {
-            blackQueenCastling = false;
-        } else if (!piece.isWhite() && from.getX() == whiteSide) {
-            blackKingCastling = false;
-        }
-    }
-
-    private void detectAndExecuteEnPassant(final Spot from, final Spot to) {
-        Piece piece = board[from.getX()][from.getY()];
-        
-        /** debugging print to be removed !!! */
-        if (piece == null) System.out.println("whitetomove="+whiteToMove+" trying to move: " + from.toString()
-                + " " + to.toString());
-        
-        if (piece.getType() == PieceType.PAWN) {
-            if (from.getX() != to.getX()
-                    && board[to.getX()][to.getY()] == null) {
-                if (to.getY() == knightJump) {
-                    board[to.getX()][kingX - 1] = null;
-                } else if (to.getY() == kingX + 1) {
-                    board[to.getX()][kingX] = null;
-                }
-            }
-        }
-    }
-
-    private void disableCastling(final Spot spot) {
-        Piece piece = board[spot.getX()][spot.getY()];
-        if (piece == null) {
-            return;
-        }
-        if (piece.getType() == PieceType.KING) {
-            disableCastlingFromKing(piece);
-        } else if (piece.getType() == PieceType.ROOK) {
-            if (piece.isWhite()) {
-                disableCastlingFromRook(piece, spot);
-            }
-        }
-    }
-
-    /**
-     * Get the moves of a piece at a specific spot
-     * @param spot Where the piece is
-     * @return ArrayList of the spots it can move to
-     */
-    public ArrayList<Spot> getMoves(final Spot spot) {
-        if (board[spot.getX()][spot.getY()] == null) {
-            return null;
-        }
-        return board[spot.getX()][spot.getY()].getMoves();
-    }
-
-    private void updateAttackedSpots() {
-        clearAttacked();
-        for (Spot spot : getPiecesOnBoard()) {
-            updateAttackedSpot(spot);
-        }
-    }
-    
-    private void updateAttackedSpot(Spot spot) {
-        Piece piece = board[spot.getX()][spot.getY()];
-        if (piece.isWhite()) {
-            if (piece.getType() == PieceType.PAWN) {
-                addPawnAttacks(spot, true, -1);
-                return;
-            }
-            for (Spot move : piece.getMoves()) {
-                whiteAttacks[move.getX()][move.getY()] = true;
-            }
-        } else {
-            if (piece.getType() == PieceType.PAWN) {
-                addPawnAttacks(spot, false, 1);
-                return;
-            }
-            for (Spot move : piece.getMoves()) {
-                blackAttacks[move.getX()][move.getY()] = true;
-            }
-        }
-    }
-
-    private void addPawnAttacks(final Spot spot, final boolean white,
-            int direction) {
-        Spot leftSpot = new Spot(spot.getX() - 1, spot.getY() + direction);
-        Spot rightSpot = new Spot(spot.getX() + 1, spot.getY() + direction);
-        if (leftSpot.onBoard()) {
-            if (white) {
-                whiteAttacks[leftSpot.getX()][leftSpot.getY()] = true;
-            } else {
-                blackAttacks[leftSpot.getX()][leftSpot.getY()] = true;
-            }
-        }
-        if (rightSpot.onBoard()) {
-            if (white) {
-                whiteAttacks[rightSpot.getX()][rightSpot.getY()] = true;
-            } else {
-                blackAttacks[rightSpot.getX()][rightSpot.getY()] = true;
-            }
-        }
-    }
-
     
     /**
      * Promotes a given pawn into the given type of piece and then finishes
@@ -453,26 +93,123 @@ public final class Game {
      * @return the phase the game will be in after promotion
      */
     public Phase promote(Spot spot, PieceType type) {
-        board[spot.getX()][spot.getY()] = new Piece(type,
-                board[spot.getX()][spot.getY()].isWhite());
-        
+        board.set(spot, new Piece(type,
+                board.get(spot).isWhite()));
         return startTurn();
+    }
+
+    private Phase startTurn() {
+        generatePotentialMoves(whiteToMove);
+        board.updateKingSpots();
+        if (board.noMovesLeft(whiteToMove)) {
+            generatePotentialMoves(!whiteToMove);
+            board.updateAttackedSpots();
+            if (checked()) {
+                return Phase.CHECKMATE;
+            } else {
+                return Phase.STALEMATE;
+            }
+        }
+        if (turns == turnLimit) {
+            return Phase.STALEMATE;
+        }
         
+        return Phase.PLAY;
+    }
+    
+    
+    private void generatePotentialMoves(boolean white) {
+        if (white == whiteToMove) {
+            board.clearAttacked();
+        }
+        for (Spot spot : board.getPiecesOnBoard()) {
+            if (board.get(spot).isWhite() != white) {
+                continue;
+            }
+            ArrayList<Spot> moves = getPotentialMoves(spot);
+            if (white == whiteToMove) {
+                moves = detectChecks(spot, moves);
+            }
+            board.get(spot).putMoves(moves);
+        }
+        if (white == whiteToMove) {
+            addCastling();
+        }
+    }
+    
+    private void addCastling() {
+        if (whiteToMove) {
+            if (castling(true, true)) {
+                board.get(kingX, 7).addMove(new Spot(7, 7));
+            }
+            if (castling(true, false)) {
+                board.get(kingX, 7).addMove(new Spot(0, 7));
+            }
+        } else {
+            if (castling(false, true)) {
+                board.get(kingX, 0).addMove(new Spot(7, 0));
+            }
+            if (castling(false, false)) {
+                board.get(kingX, 0).addMove(new Spot(0, 0));
+            }
+        }
+    }
+
+    private Spot processMove(Move move, boolean superficial) {
+        Piece piece = board.get(move.from());
+        if (!superficial) {
+            board.disableCastling(move.from());
+        }
+        executeMove(move);
+        if (superficial) {
+            return null;
+        }
+        updateEnPassant(piece, move);
+        if (piece.getType() == PieceType.PAWN && (move.to().getY() == 0
+                || move.to().getY() == 7)) {
+            return move.to();
+        }
+        return null;
+    }
+    
+    private void executeMove(Move move) {
+        detectAndExecuteEnPassant(move);
+        if (!detectAndExecuteCastling(move)) {
+            board.set(move.to(), board.get(move.from()));
+            board.set(move.from(), null);
+        }
+    }
+
+    private void updateEnPassant(Piece piece, Move move) {
+        if (piece.getType() == PieceType.PAWN
+                && Math.abs(move.from().getY() - move.to().getY()) == 2) {
+            enpassant = move.from().getX();
+        } else {
+            enpassant = enpassantDisabled;
+        }
+    }
+
+    private void detectAndExecuteEnPassant(Move move) {
+        Piece piece = board.get(move.from());
+        if (piece.getType() == PieceType.PAWN) {
+            if (move.from().getX() != move.to().getX()
+                    && board.get(move.to()) == null) {
+                if (move.to().getY() == 2) {
+                    board.set(move.to().getX(), 3, null);
+                } else if (move.to().getY() == 5) {
+                    board.set(move.to().getX(), 4, null);
+                }
+            }
+        }
     }
 
     private ArrayList<Spot> getPotentialMoves(Spot spot) {
-
-        if (board[spot.getX()][spot.getY()] == null) {
+        if (board.get(spot) == null) {
             return null;
         }
-
-
-        boolean isWhite = board[spot.getX()][spot.getY()].isWhite();
-
+        boolean isWhite = board.get(spot).isWhite();
         ArrayList<Spot> moves = new ArrayList<>();
-
         addPotentialMoves(spot, moves, isWhite);
-        
         return moves;
     }
     
@@ -481,48 +218,49 @@ public final class Game {
         int x = spot.getX();
         int y = spot.getY();
 
-        if (board[x][y].getType() == PieceType.PAWN) {
-            addPawnPotentialMoves(spot, x, y, moves, isWhite);
-        } else if (board[x][y].getType() == PieceType.KNIGHT) {
+        if (board.get(x, y).getType() == PieceType.PAWN) {
+            addPawnPotentialMoves(spot, moves, isWhite);
+        } else if (board.get(x, y).getType() == PieceType.KNIGHT) {
             addKnightPotentialMoves(spot, moves, isWhite);
-        } else if (board[x][y].getType() == PieceType.KING) {
+        } else if (board.get(x, y).getType() == PieceType.KING) {
             addKingPotentialMoves(spot, moves, isWhite);
         } else {
             moves.addAll(generateMovesFor(spot,
-                    board[spot.getX()][spot.getY()].getType()));
+                    board.get(spot).getType()));
         }
     }
     
-    private void addPawnPotentialMoves(Spot spot, int x, int y, 
-            ArrayList<Spot> moves, boolean isWhite) {
+    private void addPawnPotentialMoves(Spot spot, ArrayList<Spot> moves, 
+            boolean isWhite) {
         int dir;
-        if (board[x][y].isWhite()) {
+        if (board.get(spot).isWhite()) {
             dir = -1;
         } else {
             dir = 1;
         }
         for (int dx = -1; dx <= 1; dx++) {
-            Spot newSpot = new Spot(x + dx, y + dir);
+            Spot newSpot = new Spot(spot.getX() + dx, spot.getY() + dir);
             if (newSpot.onBoard()) {
-                processSinglePotentialPawnMove(dx, x, y, moves, newSpot,
+                processSinglePotentialPawnMove(dx, moves, newSpot,
                         dir, spot, isWhite);
             }
         }
     }
 
-    private void processSinglePotentialPawnMove(int dx, int x, int y,
+    private void processSinglePotentialPawnMove(int dx,
             ArrayList<Spot> moves, Spot newSpot, int dir, Spot spot, 
             boolean isWhite) {
+        int x = spot.getX();
+        int y = spot.getY();
         if (dx == 0) {
-            if (board[x][y + dir] == null) {
+            if (board.get(x, y + dir) == null) {
                 moves.add(newSpot);
             }
             if ((spot.getY() == 1 && !whiteToMove)
-                    || (spot.getY() == whiteSide - 1 
-                    && whiteToMove)) {
+                    || (spot.getY() == 6 && whiteToMove)) {
                 if ((new Spot(x, y + dir * 2).onBoard())
-                        && board[x][y + dir * 2] == null
-                        && board[x][y + dir] == null) {
+                        && board.get(x, y + dir * 2) == null
+                        && board.get(x, y + dir) == null) {
                     moves.add(new Spot(x, y + dir * 2));
                 }
             }
@@ -534,8 +272,8 @@ public final class Game {
     
     private void addPawnAttack(int dx, int x, int y, int dir, 
         ArrayList<Spot> moves, boolean isWhite, Spot newSpot) {
-        if (board[x + dx][y + dir] != null
-                && board[x + dx][y + dir].isWhite() 
+        if (board.get(x + dx, y + dir) != null
+                && board.get(x + dx, y + dir).isWhite() 
                 != isWhite) {
             moves.add(newSpot);
         }
@@ -546,12 +284,12 @@ public final class Game {
         if (enpassant != enpassantDisabled
             && (enpassant == x - 1
             || enpassant == x + 1)
-            && (board[enpassant][spot.getY()] != null
-            && board[enpassant][spot.getY()].isWhite()
-            != board[spot.getX()][spot.getY()].isWhite()
-            && board[spot.getX()][spot.getY()].getType()
-            == PieceType.PAWN)) {
-            if (board[enpassant][y + dir] == null) {
+            && (board.get(enpassant, spot.getY())) != null
+            && board.get(enpassant, spot.getY()).isWhite()
+            != board.get(spot).isWhite()
+            && board.get(spot).getType()
+            == PieceType.PAWN) {
+            if (board.get(enpassant, y + dir) == null) {
                 moves.add(new Spot(enpassant, y + dir));
             }
         }
@@ -559,14 +297,12 @@ public final class Game {
     
     private void addKnightPotentialMoves(Spot spot,
         ArrayList<Spot> moves, boolean isWhite) {
-        
-        ArrayList<Spot> knightMovesFinal = generateKnightMoves(spot);
-        
+        ArrayList<Spot> knightMovesFinal = board.generateKnightMoves(spot);
         for (Spot move : knightMovesFinal) {
             if (!move.onBoard()) {
                 continue;
             }
-            Piece piece = board[move.getX()][move.getY()];
+            Piece piece = board.get(move);
             if (move.onBoard() && (piece == null
                 || piece.isWhite() != isWhite)) {
                 moves.add(move);
@@ -577,212 +313,98 @@ public final class Game {
     private void addKingPotentialMoves(Spot spot, ArrayList<Spot> moves, 
         boolean isWhite) {
         ArrayList<Spot> dirs = new ArrayList<>();
-        dirs.addAll(bishopDirections);
-        dirs.addAll(rookDirections);
+        dirs.addAll(board.getDirections(PieceType.KING));
         for (Spot dir : dirs) {
-            Spot newspot = new Spot(spot.getX() + dir.getX(), spot.getY()
+            Spot newSpot = new Spot(spot.getX() + dir.getX(), spot.getY()
                     + dir.getY());
-            if (!newspot.onBoard()) {
+            if (!newSpot.onBoard()) {
                 continue;
             }
-            Piece piece = board[newspot.getX()][newspot.getY()];
-            if (newspot.onBoard()) {
+            Piece piece = board.get(newSpot);
+            if (newSpot.onBoard()) {
                 if (piece != null && piece.isWhite() == isWhite) {
                     continue;
                 }
-                moves.add(newspot);
+                moves.add(newSpot);
             }
         }
     }
 
-    private void clearAttacked() {
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                whiteAttacks[x][y] = false;
-                blackAttacks[x][y] = false;
-            }
-        }
-    }
-
-    private ArrayList<Spot> detectChecks(final Spot spot, 
-            final ArrayList<Spot> moves) {
-
+    private ArrayList<Spot> detectChecks(Spot startSpot, 
+            ArrayList<Spot> moves) {
         for (Iterator<Spot> iterator = moves.iterator(); iterator.hasNext();) {
-            Piece[][] savedBoard = copyBoard();
-            Spot move = iterator.next();
-            executeMove(spot, move, true);
-            updateKingSpots();
+            Piece[][] savedBoard = board.copyRawBoard();
+            Spot moveTo = iterator.next();
+            Move move = new Move(startSpot, moveTo);
+            processMove(move, true);
+            board.updateKingSpots();
             generatePotentialMoves(!whiteToMove);
-            updateAttackedSpots();
+            board.updateAttackedSpots();
             if (checked()) {
                 iterator.remove();
             }
-            board = savedBoard;
-            clearAttacked();
+            board.setBoard(savedBoard);
+            board.clearAttacked();
         }
-
         return moves;
     }
     
-    private void updateKingSpots() {
-        for (Spot pieceSpot : getPiecesOnBoard()) {
-            Piece curPiece = board[pieceSpot.getX()][pieceSpot.getY()];
-            if (curPiece.getType() == PieceType.KING) {
-                if (curPiece.isWhite()) {
-                    whiteKingSpot = pieceSpot;
-                } else {
-                    blackKingSpot = pieceSpot;
-                }
-            }
-        }
-    }
-    
     private boolean checked() {
-        Spot kingSpot = getKingSpot();
-        return (whiteToMove && blackAttacks[kingSpot.getX()][kingSpot.getY()])
-                    || (!whiteToMove
-                    && whiteAttacks[kingSpot.getX()][kingSpot.getY()]);
+        Spot kingSpot = board.getKingSpot(whiteToMove);
+        return (whiteToMove && board.getAttacked(false, kingSpot))
+                    || (!whiteToMove && board.getAttacked(true, kingSpot));
     }
     
-    private Spot getKingSpot() {
-        if (whiteToMove) {
-            return whiteKingSpot;
-        } else {
-            return blackKingSpot;
-        }
-    }
-
-    private boolean detectAndExecuteCastling(final Spot from, final Spot to) {
-        if (!detectCastling(from, to)) {
+    private boolean detectAndExecuteCastling(Move move) {
+        if (!board.detectCastling(move)) {
             return false;
         }
-        Spot target = getCastlingTarget(from, to);
-        board[from.getX()][from.getY()] = null;
-        board[to.getX()][to.getY()] = null;
-        board[target.getX()][target.getY()] = 
-                new Piece(PieceType.KING, !whiteToMove);
+        Spot target = board.getCastlingTarget(move, whiteToMove);
+        board.set(move.from(), null);
+        board.set(move.to(), null);
+        board.set(target, new Piece(PieceType.KING, !whiteToMove));
         int rookX;
         if (target.getX() == 2) {
             rookX = kingX - 1;
         } else {
             rookX = kingX + 1;
         }
-        board[rookX][target.getY()] = new Piece(PieceType.ROOK, !whiteToMove);
+        board.set(rookX, target.getY(), 
+                new Piece(PieceType.ROOK, !whiteToMove));
         return true;
     }
     
-    private Spot getCastlingTarget(final Spot from, final Spot to) {
-        int x;
-        int y;
-        if (!whiteToMove) {
-            y = whiteSide;
-        } else {
-            y = 0;
-        }
-        if (from.getX() == 0 || to.getX() == 0) {
-            x = knightJump;
-        } else {
-            x = whiteSide - 1;
-        }
-        return new Spot(x, y);
-    }
-    
-    private boolean detectCastling(final Spot from, final Spot to) {
-        return !(board[from.getX()][from.getY()] == null
-                || board[to.getX()][to.getY()] == null
-                || board[from.getX()][from.getY()].isWhite()
-                != board[to.getX()][to.getY()].isWhite());
-    }
-
-    private boolean castling(final boolean white, final boolean kingSide) {
-        int x = initCastlingX(kingSide);
-        int y = initCastlingY(white);
-        if (castlingDisabled(white, kingSide)) {
+    private boolean castling(boolean white, boolean kingSide) {
+        Spot spot = board.initCastlingSpot(kingSide, white);
+        if (board.castlingDisabled(white, kingSide)) {
             return false;
         }
-        updateAttackedSpots();
-        boolean[][] attackedSpots = whiteAttacks;
-        if (white) {
-            attackedSpots = blackAttacks;
-        }
+        board.updateAttackedSpots();
         if (kingSide) {
-            if (kingCastlingBlocked(x, y, attackedSpots)) {
+            if (board.kingCastlingBlocked(spot.getX(), spot.getY(), white)) {
                 return false;
             }
-        } else if (queenCastlingBlocked(x, y, attackedSpots)) {
+        } else if (board.queenCastlingBlocked(spot.getX(), spot.getY(), 
+                white)) {
             return false;
         }
         return true;
     }
-    
-    private boolean kingCastlingBlocked(int x, int y, boolean[][] attackedSpots) {
-        return (board[x][y] != null || board[x + 1][y] != null
-                    || attackedSpots[x - 1][y] || attackedSpots[x][y]
-                    || attackedSpots[x + 1][y]);
-    }
-    
-    private boolean queenCastlingBlocked(int x, int y, boolean[][] attackedSpots) {
-        return (board[x][y] != null || board[x + 1][y] != null
-                || board[x + 2][y]
-                != null || attackedSpots[x + 1][y]
-                || attackedSpots[x + 2][y]
-                || attackedSpots[x + kingX - 1][y]);
-    }
-    
-    private boolean castlingDisabled(boolean white, boolean kingSide) {
-        return (kingSide && white && !whiteKingCastling) || (!kingSide && white
-                && !whiteQueenCastling) || (kingSide && !white 
-                && !blackKingCastling)
-                || (!kingSide && !white && !blackQueenCastling);
-    }
-    
-    private int initCastlingX(boolean kingSide) {
-        if (kingSide) {
-            return kingX + 1;
-        } else {
-            return 1;
-        }
-    }
-    
-    private int initCastlingY(boolean white) {
-        if (white) {
-            return whiteSide;
-        } else {
-            return 0;
-        }
-    }
 
-    private Piece[][] copyBoard() {
-        Piece[][] tempBoard = new Piece[boardSize][boardSize];
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                tempBoard[x][y] = board[x][y];
-            }
-        }
-        return tempBoard;
-    }
-
-    private ArrayList<Spot> generateMovesFor(final Spot spot, 
-            final PieceType type) {
+    private ArrayList<Spot> generateMovesFor(Spot spot, PieceType type) {
         ArrayList<Spot> dirs = new ArrayList<>();
-
-        if (type == PieceType.BISHOP) {
-            dirs.addAll(bishopDirections);
-        } else if (type == PieceType.ROOK) {
-            dirs.addAll(rookDirections);
+        if (type == PieceType.QUEEN) {
+            dirs = board.getDirections(type);
         } else {
-            dirs.addAll(bishopDirections);
-            dirs.addAll(rookDirections);
+            dirs.addAll(board.getDirections(type));
         }
-
         ArrayList<Spot> moves = generateMovesFromDirs(spot, dirs);
-
         return moves;
     }
 
-    private ArrayList<Spot> generateMovesFromDirs(final Spot spot, 
-            final ArrayList<Spot> dirs) {
-        boolean isWhite = board[spot.getX()][spot.getY()].isWhite();
+    private ArrayList<Spot> generateMovesFromDirs(Spot spot, 
+            ArrayList<Spot> dirs) {
+        boolean isWhite = board.get(spot).isWhite();
         ArrayList<Spot> moves = new ArrayList<>();
         for (Spot dir : dirs) {
             Spot curSpot = new Spot(spot.getX() + dir.getX(),
@@ -797,29 +419,20 @@ public final class Game {
         while (curSpot.onBoard()) {
             int x = curSpot.getX();
             int y = curSpot.getY();
-            if (board[x][y] == null) {
+            if (board.get(x, y) == null) {
                 moves.add(new Spot(x, y));
                 curSpot.setX(curSpot.getX() + dir.getX());
                 curSpot.setY(curSpot.getY() + dir.getY());
                 continue;
             }
-            if (board[x][y].isWhite() != isWhite) {
+            if (board.get(x, y).isWhite() != isWhite) {
                 moves.add(new Spot(x, y));
             }
             break;
         }
     }
 
-    private ArrayList<Spot> generateKnightMoves(final Spot spot) {
-        ArrayList<Spot> moves = new ArrayList<>();
-        for (Spot move : knightMoves) {
-            moves.add(new Spot(spot.getX() + move.getX(),
-                    spot.getY() + move.getY()));
-        }
-        return moves;
-    }
-
-    public Piece[][] getBoard() {
+    public Board getBoard() {
         return board;
     }
 
@@ -827,25 +440,11 @@ public final class Game {
         return whiteToMove;
     }
 
-    /**
-     * Gathers a list of all pieces on the board (both players)
-     * @return ArrayList of all the Spots that have a piece in them
-     */
-    public ArrayList<Spot> getPiecesOnBoard() {
-        ArrayList<Spot> pieces = new ArrayList<>();
-        for (int x = 0; x < boardSize; x++) {
-            for (int y = 0; y < boardSize; y++) {
-                if (board[x][y] != null) {
-                    pieces.add(new Spot(x, y));
-                }
-            }
-        }
-        return pieces;
-    }
-    
-    
     public int getTurn() {
         return turns;
     }
-
+    
+    public ArrayList<Piece[][]> getBoardHistory() {
+        return boardHistory;
+    }
 }

@@ -23,4 +23,7 @@
 | 1.5.  | 2 | Fixed bug: pawn was attacking also the spot in front of it. This caused the stalemate/checkmate errors. Removed copypastey code. |
 | 2.5.  | 4 | Fixed another stalemate-bug, started drafting AI move choosing algorithm |
 | 3.5.  | 5 | Wrote, tested and adjusted the move choosing algorithm: minmax with alpha-beta-pruning |
-| Total | 65 | |
+| 6.5.  | 4 | Testing, planning of rewrite |
+| 8.5.  | 4 | Started rewrite dividing Game class into Game and Board classes |
+| 9.5.  | 5 | Changed saving into sql database (used to be textfile), debugging castling problems cause by rewrite |
+| Total | 78 | |

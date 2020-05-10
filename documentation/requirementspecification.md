@@ -11,11 +11,12 @@ The application does not have user roles. After each game the player can choose 
 ### Main functionalities
 
 + Play normal chess against human (Completed)
-+ Play chess against a simple AI (Completed partly: Can be played, but the AI still virtually non-intelligent)
+  + All rules are implemented except the 3-turn-repeat stalemate rule which is not important.
++ Play chess against a simple AI (Completed)
 + Re-watch games played in the past, going through them turn-by-turn (Completed)
   + Also possible to go backwards (Completed)
 
-### Further development possibilities
+### Further development possibilities (None implemented)
 
 These properties will only be implemented if there is extra time in the later weeks of the course.
 
