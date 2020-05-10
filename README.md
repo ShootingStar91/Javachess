@@ -2,6 +2,8 @@
 
 Javachess is a chess game implemented in Java. It is a practice project for a Computer Science course at University of Helsinki, by Arttu Kangas. The game will have at least normal chess against human or AI, and the games will be saved and can be rewatched.
 
+It features playing normal chess against your friend sitting next to you, or an AI engine. The AI is quite good in the mid-game and will do no stupid mistakes. However, it lacks the ability to force checkmate in end-game, and often finishes in stalemate. This is a common problem with minmax-algorithms. One solution is a pre-saved database of many different end-game situations, but that is out of the scope for this learning project.
+
 The game is finished for review and will no longer be updated.
 
 __Important:__ 
