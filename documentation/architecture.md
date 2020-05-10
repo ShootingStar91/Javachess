@@ -2,10 +2,10 @@
 
 ![Architecture](https://github.com/ShootingStar91/Javachess/blob/master/documentation/packagediagram.png)
 
-Main-class is here omitted, since it's only purpose is to launch UserInterface-class. It has its own package, "main".
+Main-class (and main-package) exists also but is omitted here, since it's only purpose is to launch UserInterface-class. It has its own package, "main".
 
 Packages explained:
-+ **ui** is responsible for showing user interface and telling game-class what input user has given. This all happens in UserInterface-class.
++ **userinterface** is responsible for showing user interface and telling game-class what input user has given. This all happens in UserInterface-class.
 + **game** has the game logic classes and enums, which are:
   + **Game** which handles the main logic of the chess game. It changes turns and saves each board on every turn to memory. It uses the Board-class to remember where the pieces are and interacts with it to generate all potential moves on each turn.
   + **Board** represents the chessboard with its pieces. It also saves variables that tell if the kings or rooks have been moved, which will prevent castling. It provides different methods for the Game-class to use in generating moves and checking if the game is in checkmate or not.
@@ -25,7 +25,7 @@ The interface has three different scenes:
   + Accessed by two buttons of main menu: Either game against human or AI
   + When playing against AI Engine, the processing of AIEngine-class is threaded separately so that the player will see their own move first and the AI engine will move after it has processed. Meanwhile there is an icon showing that the AI is thinking above the chessboard.
 + Loading previously saved game
-  + Has buttons of each saved game
+  + Has a list of each saved game and two buttons: watch game and return to menu
 
 The three scenes are added onto a single stage whenever they are used.
 
