@@ -21,4 +21,6 @@ When the game is finished, type a name for it and click OK (note: do not press e
 
 Your game will be saved in javachessDatabase.db file in the same folder where you ran the game. This file is automatically created if it does not exist. If you want to remove all games, you can simply delete this file.
 
-Click Rewatch games button to view your previous game and press the forward and backward buttons in the top of the screen.
+Click Rewatch games button to view your previous games. Click a game title to select it from the list and press Watch game from bottom of the window.
+
+Then press the forward and backward buttons in the top of the screen to watch the game turn-by-turn.
