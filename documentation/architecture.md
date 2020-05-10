@@ -37,7 +37,7 @@ The sequence diagram below details the main logic that the UserInterface, Game a
 
 The following sequence diagram explains how the AIEngine is put to work by the UserInterface to provide AI opponent for the human player.
 
-![Sequence diagram 2](https://github.com/ShootingStar91/Javachess/blob/master/documentation/aiengineequence.png)
+![Sequence diagram 2](https://github.com/ShootingStar91/Javachess/blob/master/documentation/aienginesequence.png)
 
 # Saving games
 

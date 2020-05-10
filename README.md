@@ -12,7 +12,7 @@ __Important:__
 # Links
 
 + [Code](https://github.com/ShootingStar91/Javachess/blob/master/src/)
-+ [Instructions on how to use the application](https://github.com/ShootingStar91/Javachess/blob/master/documentation/instructions.md)
++ [Instructions](https://github.com/ShootingStar91/Javachess/blob/master/documentation/instructions.md)
 + [Architecture](https://github.com/ShootingStar91/Javachess/blob/master/documentation/architecture.md)
 + [Requirement specification](https://github.com/ShootingStar91/Javachess/blob/master/documentation/requirementspecification.md)
 + [Testing document](https://github.com/ShootingStar91/Javachess/blob/master/documentation/testingdocument.md)

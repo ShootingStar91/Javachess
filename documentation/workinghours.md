@@ -25,5 +25,6 @@
 | 3.5.  | 5 | Wrote, tested and adjusted the move choosing algorithm: minmax with alpha-beta-pruning |
 | 6.5.  | 4 | Testing, planning of rewrite |
 | 8.5.  | 4 | Started rewrite dividing Game class into Game and Board classes |
-| 9.5.  | 5 | Changed saving into sql database (used to be textfile), debugging castling problems cause by rewrite |
-| Total | 78 | |
+| 9.5.  | 8 | Changed saving into sql database (used to be textfile), debugging castling problems cause by rewrite |
+| 10.5. | 5 | Minor changes and additions and cleanup to code. Wrote tests. Wrote documentation and pushed final version and made final release |
+| Total | 86 | |
