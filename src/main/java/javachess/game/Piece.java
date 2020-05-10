@@ -92,7 +92,7 @@ public class Piece {
     
     /**
      * Returns the letter corresponding to the type of this Piece
-     * @return 
+     * @return String containing single letter representing the piece type
      */
     public String getLetter() {
         switch (this.getType()) {

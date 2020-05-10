@@ -36,8 +36,9 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 
-/**
- *
+/** 
+ * Class for showing the user interface and handling user input
+ * and launching application logic classes
  * @author Arttu Kangas
  */
 
@@ -65,6 +66,10 @@ public class UserInterface extends Application {
     private boolean playersTurn;
     private ProgressIndicator thinkingIcon;
     
+    /**
+     * Starts the JavaFX-application
+     * @param gameWindow The Stage for JavaFX
+     */
     @Override
     public void start(Stage gameWindow) {
         thinkingIcon = new ProgressIndicator();
@@ -209,7 +214,7 @@ public class UserInterface extends Application {
         window.show();
     }
     
-    public void exitButton() {
+    private void exitButton() {
         if (!watchingGame) {
             Alert alert = new Alert(AlertType.CONFIRMATION);
             alert.setTitle("Exit game");
@@ -223,14 +228,14 @@ public class UserInterface extends Application {
         exitOk();
     }
 
-    public void exitOk() {
+    private void exitOk() {
         game = null;
         watchingGame = false;
         againstAI = false;
         window.setScene(mainMenu);
     }
     
-    public boolean loadGames() {
+    private boolean loadGames() {
         boolean gamesAvailable = true;
         int buttonRow = 2;
         int buttonCol = 2;
@@ -268,7 +273,7 @@ public class UserInterface extends Application {
         return gamesAvailable;
     }
 
-    public void showRewatchButtons(boolean visible) {
+    private void showRewatchButtons(boolean visible) {
         Image forward = images.get("forward");
         Image backward = images.get("backward");
         if (!visible) {
@@ -298,7 +303,8 @@ public class UserInterface extends Application {
         boardImages[4][0].setImage(forward);  
     }
     
-    public void showPromotionBar(boolean visible) {
+
+    private void showPromotionBar(boolean visible) {
         if (visible) {
             String playerLetter = "d";
             if (!game.whiteToMove()) {
@@ -316,7 +322,7 @@ public class UserInterface extends Application {
         drawBoard();
     }
     
-    public void clickedOn(int col, int row) {
+    private void clickedOn(int col, int row) {
         if (!playersTurn) return;
         if (highlightedSpots != null) {
             if (!highlightedSpots.isEmpty()) {
@@ -360,13 +366,13 @@ public class UserInterface extends Application {
         highlight(col, row);
     }
     
-    public void showThinkingIcon(boolean visible) {
+    private void showThinkingIcon(boolean visible) {
         Platform.runLater(() -> {
             thinkingIcon.setVisible(visible);
         });
     }
     
-    public void highlight(int col, int row) {
+    private void highlight(int col, int row) {
         if (game.getBoard().get(new Spot(col, row)) != null) {
             if (!againstAI || (game.whiteToMove() && playersTurn)) {
                 highlightedSpots = game.getBoard().get(new Spot(col, row))
@@ -394,7 +400,7 @@ public class UserInterface extends Application {
             }
     }
     
-    public void gameFinished(Phase phase) {
+    private void gameFinished(Phase phase) {
         TextInputDialog dialog = new TextInputDialog();
         String gameResult = "";
         if (phase == Phase.CHECKMATE) {
@@ -425,7 +431,7 @@ public class UserInterface extends Application {
         exitOk();
     }
     
-    public void drawBoard() {
+    private void drawBoard() {
             if (game == null && !watchingGame) {
                 return;
             }
@@ -468,7 +474,7 @@ public class UserInterface extends Application {
             turnLabel.setText("Turn: " + turns);
     }
     
-    public void startGame(boolean againstAI) {
+    private void startGame(boolean againstAI) {
         watchingGame = false;
         game = new Game(false);
         if (againstAI) {
@@ -479,7 +485,7 @@ public class UserInterface extends Application {
         window.setScene(gameScene);
     }
     
-    public void initImages() {
+    private void initImages() {
         String [] type = {"p", "n", "b", "r", "q", "k"};
         String [] color = {"l", "d"};
         for (int i=0; i<type.length; i++) {
